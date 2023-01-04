@@ -3,7 +3,7 @@ const cors = require('cors')
 const { generateImage, generateText } = require('../controllers/openaiController');
 const router = express.Router();
 var corsOptions = {
-  origin: ['https://leafy-malasada-939f12.netlify.app/', 'http://localhost:5173'],
+  origin: ['https://leafy-malasada-939f12.netlify.app', 'http://localhost:5173'],
   optionsSuccessStatus: 200 // For legacy browser support
 }
 router.use(cors(corsOptions))
