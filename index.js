@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/openia', require('./routes/openaiRoutes'));
 
-const server = app.listen(process.env.PORT || 5000, () => {
+const server = app.listen(port, () => {
     const port = server.address().port;
     console.log(`Express is working on port ${port}`);
 });

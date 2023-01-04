@@ -17,7 +17,7 @@ const generateText = async (req, res) => {
       max_tokens: maxLength * 2,
       stream: false,
       top_p: top_p
-    });
+    }); 
     console.log(completion.data.choices[0].text);
     res.send(completion.data.choices[0].text)
   } catch (error) {
