@@ -22,6 +22,7 @@ const generateText = async (req, res) => {
     res.send(completion.data.choices[0].text)
   } catch (error) {
     console.error(error.message);
+    res.send("algo a fallado", error);
   }
 }
 const generateImage = async (req, res) => {
