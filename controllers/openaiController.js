@@ -7,10 +7,10 @@ const openai = new OpenAIApi(configuration);
 
 const generateText = async (req, res) => {
   try {
-    let { top_p, prompt, maxLength, language, soft } = req.body
-    prompt += ` esta respuesta la quiero en ${language} y con un tono ${soft}`
-    console.log(prompt);
-    
+    let { top_p, prompt, maxLength, language, soft, hashtag } = req.body
+    prompt += ` esta respuesta la quiero en ${language}, con un tono ${soft} ${hashtag ? `${hashtag}` : ''}`
+    console.log(req.body);
+
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: prompt,
