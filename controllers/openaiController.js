@@ -1,4 +1,6 @@
 const { Configuration, OpenAIApi } = require('openai');
+const { generateHastag, softMessaje, getLenguaje, maxLengthText } = require('../querys/querys')
+
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -8,15 +10,15 @@ const openai = new OpenAIApi(configuration);
 const generateText = async (req, res) => {
   try {
     let { top_p, prompt, maxLength, language, soft, hashtag } = req.body
-    prompt += ` esta respuesta la quiero en ${language}, con un tono ${soft} ${hashtag ? `${hashtag}` : ''}`
     console.log(req.body);
-
+    prompt = `${prompt} ${softMessaje(soft)}; ${getLenguaje(language)} ${maxLengthText(maxLength)} ${generateHastag(false, hashtag)}`
+    console.log(prompt);
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: prompt,
-      max_tokens: maxLength * 2,
       stream: false,
-      top_p: top_p
+      top_p: top_p,
+      max_tokens: 2000  
     }); 
     console.log(completion.data.choices[0].text);
     res.send(completion.data.choices[0].text)
