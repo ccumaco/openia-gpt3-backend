@@ -1,13 +1,13 @@
 
-const generateHastag = (generateHastag = false, hastags) => {
+const generateHastag = (generateHastag = false, hastags, countHashtag) => {
     if (generateHastag && hastags.length == 0) {
         console.log("primero");
-        return 'y genera unos hashtag apropiados para el tema'
-    } else if (hastags) {
-        console.log("segundo");
+        return `y genera ${countHashtag} hashtags apropiados para el tema`
+    } else if (generateHastag && hastags.length > 0) {
+        return `y genera ${countHashtag} hashtags apropiados para el tema`
+    } else if(!generateHastag && hastags.length > 0){
         return `y agrega estos hashtag ${hastags}`
     }
-    console.log("tercero", generateHastag, hastags.length);
     return ''
 }
 const getLenguaje = (language) => {
@@ -28,4 +28,13 @@ const softMessaje = (soft) => {
         return `y con un tono ${soft}`
     }
 }
-module.exports = { generateHastag, getLenguaje, softMessaje, maxLengthText };
+
+const getMaxResponses = (maxResponses) => {
+    if (maxResponses <= 0) {
+        return 1;
+    } else if (maxResponses >= 3) {
+        return 3
+    }
+    return maxResponses
+}
+module.exports = { generateHastag, getLenguaje, softMessaje, maxLengthText, getMaxResponses };
