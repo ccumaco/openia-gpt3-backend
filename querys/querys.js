@@ -12,20 +12,20 @@ const generateHastag = (generateHastag = false, hastags, countHashtag) => {
 }
 const getLenguaje = (language) => {
     if (language) {
-        return `esta respuesta la quiero en ${language}`
+        return `esta respuesta la quiero en ${language};`
     }
     return ''
 }
 const maxLengthText = (maxLength) => {
     if (maxLength) {
-        return `Con una longitud de ${maxLength} caracteres`
+        return `con una cantidad igual o menor a ${maxLength} caracteres;`
     }
     return ''
 }
 
 const softMessaje = (soft) => {
     if (soft) {
-        return `y con un tono ${soft}`
+        return `y con un tono ${soft};`
     }
 }
 

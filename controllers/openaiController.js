@@ -29,7 +29,7 @@ const generateText = async (req, res) => {
 		console.log(req.body);
 		prompt = `
         ${prompt}
-        ${softMessaje(soft)};
+        ${softMessaje(soft)}
         ${getLenguaje(language)}
         ${maxLengthText(maxLength)}
         ${generateHastag(automaticHastag, hashtag, countHashtag)}

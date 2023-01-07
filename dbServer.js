@@ -14,7 +14,4 @@ const db = mysql.createPool({
    database: DB_DATABASE,
    port: DB_PORT
 })
-db.getConnection( (err, connection)=> {
-   if (err) throw (err)
-   console.log ("DB connected successful: " + connection.threadId)
-})
+module.exports = { db }
