@@ -6,7 +6,7 @@ const {
 	maxLengthText,
 	maxResponses,
 	getMaxResponses,
-} = require('../querys/querys');
+} = require('../querys/querysPrompt');
 
 const configuration = new Configuration({
 	apiKey: process.env.OPENAI_API_KEY,

@@ -1,12 +1,12 @@
-const express = require('express');
 const bcrypt = require('bcrypt');
-const {db} = require('../dbServer')
+const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
 
 const verifyPassword = async (password, userPassword) => {
   return await bcrypt.compare(password, userPassword)
 };
 const login = async (req, res) => {
+  console.log(req.body);
   const { userEmail, userPassword, userToken } = req.body;
 
   // Busca el usuario en la base de datos
@@ -17,28 +17,27 @@ const login = async (req, res) => {
     const user = results[0];
     // Verifica la contraseña
     if (!verifyPassword(userPassword, user.userPassword)) return res.status(401).send({ message: 'La contraseña o correo no coinciden' });
-    
+
     // verifica que envie un token
-    if (!userToken) return res.send('no hay token')
-
-    if (userToken) {
-      try {
-        const decoded = jwt.verify(userToken, process.env.SECRET);
-        res.status(200).send(decoded )
-
-      } catch (error) {
-        const options = { expiresIn: 100 };
-        const newToken = jwt.sign({ userEmail: userEmail }, process.env.SECRET, options);
-        db.query('UPDATE users SET userToken = ? WHERE userEmail = ?', [newToken, userEmail],
+    // if (userToken != results[0].userToken) return res.send('token invalido')
+    try {
+      const decoded = jwt.verify(userToken, process.env.SECRET);
+      res.status(200).send(user)
+      return
+    } catch (error) {
+      console.log('entro al catch');
+      const options = { expiresIn: 36000 };
+      const newToken = jwt.sign({ userEmail: userEmail }, process.env.SECRET, options);
+      db.query('UPDATE users SET userToken = ? WHERE userEmail = ?', [newToken, userEmail],
         (error, results) => {
           if (error) {
             return res.status(500).send({ error: 'Error al generar token' });
           }
-          res.send({ message: 'Logueo bien '+ newToken });
+          user.userToken = newToken
+          res.status(200).send(user);
         })
-      }
+      return
     }
-
   });
 };
 const register = async (req, res) => {
@@ -50,7 +49,7 @@ const register = async (req, res) => {
 
 
   // Expiración en 7 días
-  const options = { expiresIn: 100 };
+  const options = { expiresIn: 36000 };
   const newToken = jwt.sign({ userEmail: userEmail }, process.env.SECRET, options);
   // Inserta el nuevo usuario en la base de datos
   db.query(
@@ -67,10 +66,10 @@ const register = async (req, res) => {
 const logout = (req, res) => {
   // Elimina el userToken de acceso del usuario (ejemplo con cookie)
   res.clearCookie('accessToken');
-  
+
   // Envía una respuesta al cliente indicando que la sesión ha sido cerrada correctamente
   res.send({ message: 'Logout successful' });
-  }
+}
 
 module.exports = {
   login,
