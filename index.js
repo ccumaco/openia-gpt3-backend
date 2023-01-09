@@ -7,7 +7,7 @@ const mysql = require("mysql")
 require("dotenv").config()
 const app = express();
 const cors = require('cors')
-// const {db} = require('./dbServer')
+const {db} = require('./dbServer')
 
 var corsOptions = {
 	origin: ['https://leafy-malasada-939f12.netlify.app', 'http://127.0.0.1:5173', 'http://localhost:5173'],
@@ -29,16 +29,16 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-// db.getConnection( ( err, connection ) => {
-//     if (err) throw (err)
-//     console.log ("DB connected successful: " + connection.threadId)
-//  })
+db.getConnection( ( err, connection ) => {
+    if (err) throw (err)
+    console.log ("DB connected successful: " + connection.threadId)
+ })
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/openia', require('./routes/openaiRoutes'));
-// app.use('/openia', require('./routes/auth'));
+app.use('/openia', require('./routes/auth'));
 
 
 const server = app.listen(port, () => {
