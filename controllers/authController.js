@@ -2,22 +2,23 @@ const bcrypt = require('bcrypt');
 const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
 
-const verifyPassword = async (password, userPassword) => {
-  return await bcrypt.compare(password, userPassword)
-};
+const verifyPassword = async (password, hashedPassword) => {
+  return bcrypt.compare(password, hashedPassword);
+}
 const login = async (req, res) => {
   console.log(req.body);
   const { userEmail, userPassword, userToken } = req.body;
 
   // Busca el usuario en la base de datos
-  db.query('SELECT * FROM users WHERE userEmail = ?', [userEmail], (err, results) => {
+  db.query('SELECT * FROM users WHERE userEmail = ?', [userEmail], async (err, results) => {
     // valida si el usuario no existe
     if (err || !results.length) return res.status(401).send({ message: 'No existe el usuario' });
 
     const user = results[0];
     // Verifica la contraseña
-    if (!verifyPassword(userPassword, user.userPassword)) return res.status(401).send({ message: 'La contraseña o correo no coinciden' });
-
+    if (await verifyPassword(userPassword, user.userPassword) == false) {
+      return res.status(401).send({ message: 'La contraseña o correo no coinciden' })
+    }
     // verifica que envie un token
     // if (userToken != results[0].userToken) return res.send('token invalido')
     try {

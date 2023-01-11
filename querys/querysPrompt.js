@@ -6,7 +6,7 @@ const generateHastag = (generateHastag = false, hastags, countHashtag) => {
     } else if (generateHastag && hastags.length > 0) {
         return `y genera ${countHashtag} hashtags apropiados para el tema`
     } else if(!generateHastag && hastags.length > 0){
-        return `y agrega estos hashtag ${hastags}`
+        return `y agrega estos hashtag ${hastags} al final`
     }
     return ''
 }
@@ -25,7 +25,7 @@ const maxLengthText = (maxLength) => {
 
 const softMessaje = (soft) => {
     if (soft) {
-        return `y con un tono ${soft};`
+        return ` con un tono ${soft};`
     }
 }
 

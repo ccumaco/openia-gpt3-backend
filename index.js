@@ -7,6 +7,7 @@ const bodyParser = require('body-parser')
 const mysql = require("mysql")
 require("dotenv").config()
 const app = express();
+const morgan = require('morgan')
 const cors = require('cors')
 const {db} = require('./dbServer')
 
@@ -21,6 +22,7 @@ app.use(cors(corsOptions))
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(morgan('dev'))
 app.use(session({
     cookie: { maxAge: 86400000 },
     store: new MemoryStore({
@@ -38,6 +40,15 @@ db.getConnection( ( err, connection ) => {
     if (err) throw (err)
     console.log ("DB connected successful: " + connection.threadId)
  })
+
+
+//  sequelize conecct
+//  try {
+//     sequelize.authenticate();
+//     console.log('Connection has been established successfully.');
+//   } catch (error) {
+//     console.error('Unable to connect to the database:', error);
+//   }
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
