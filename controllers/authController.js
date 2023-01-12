@@ -8,6 +8,7 @@ const verifyPassword = async (password, hashedPassword) => {
 const login = async (req, res) => {
   console.log(req.body);
   const { userEmail, userPassword, userToken } = req.body;
+  
 
   // Busca el usuario en la base de datos
   db.query('SELECT * FROM users WHERE userEmail = ?', [userEmail], async (err, results) => {
