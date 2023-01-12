@@ -12,7 +12,7 @@ const cors = require('cors')
 const {db} = require('./dbServer')
 
 var corsOptions = {
-	origin: ['https://leafy-malasada-939f12.netlify.app', 'http://127.0.0.1:5173', 'http://localhost:5173'],
+	origin: ['https://incopy.netlify.app', 'http://127.0.0.1:5173', 'http://localhost:5173'],
 	optionsSuccessStatus: 200 // For legacy browser support
 }
 app.use(cors(corsOptions))
