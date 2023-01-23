@@ -5,40 +5,61 @@ const jwt = require('jsonwebtoken');
 const verifyPassword = async (password, hashedPassword) => {
   return bcrypt.compare(password, hashedPassword);
 }
-const login = async (req, res) => {
-  console.log(req.body);
-  const { userEmail, userPassword, userToken } = req.body;
 
-
-  // Busca el usuario en la base de datos
-  db.query('SELECT * FROM users WHERE userEmail = ?', [userEmail], async (err, results) => {
-    // valida si el usuario no existe
-    if (err || !results.length) return res.status(401).send({ message: 'No existe el usuario' });
-
-    const user = results[0];
-    // Verifica la contraseña
-    if (await verifyPassword(userPassword, user.userPassword) == false) {
-      return res.status(401).send({ message: 'La contraseña o correo no coinciden' })
-    }
-    try {
-      const decoded = jwt.verify(userToken, process.env.SECRET);
-      res.status(200).send(user)
-      return
-    } catch (error) {
-      console.log('entro al catch');
-      const options = { expiresIn: 500 };
-      const newToken = jwt.sign({ userEmail: userEmail }, process.env.SECRET, options);
-      db.query('UPDATE users SET userToken = ? WHERE userEmail = ?', [newToken, userEmail],
-        (error, results) => {
-          if (error) {
-            return res.status(500).send({ error: 'Error al generar token' });
-          }
-          user.userToken = newToken
-          res.status(200).send(user);
-        })
-      return
-    }
+const getUserInfoFromDB = async (userEmail) => {
+  const query = 'SELECT * FROM users WHERE userEmail = ?'
+  await db.query(query, [userEmail], (error, results) => {
+    console.log(results[0]);
+    if (error) {
+      console.log(error);
+      return null
+    };
+    return results[0];
   });
+}
+
+const generateNewToken = () => {
+  // Obtener información del usuario a partir de la base de datos
+  // ...
+  const user = getUserInfoFromDB();
+  
+  // Crear payload del token
+  const payload = {
+    userId: user.id,
+    email: user.email
+  };
+  
+  // Generar nuevo token de acceso
+  const options = { expiresIn: '30m' };
+  const secret = process.env.SECRET;
+  const newToken = jwt.sign(payload, secret, options);
+  
+  return newToken;
+}
+const checkToken = (req) => {
+  // Obtener token del encabezado de la petición
+  const token = req.headers['authorization'];
+  
+  // Verificar si existe un token
+  if (!token) {
+    // Generar nuevo token si no existe
+    return generateNewToken();
+  }
+  
+  try {
+    // Verificar validez del token existente
+    const decoded = jwt.verify(token, process.env.SECRET);
+    return token;
+  } catch(err) {
+    // Generar nuevo token si el existente es inválido
+    return generateNewToken();
+  }
+}
+const login = async (req, res) => {
+  const { userEmail } = req.body
+  if (getUserInfoFromDB(userEmail)) {
+    res.send(checkToken(req))
+  }
 };
 const register = async (req, res) => {
   // Obtén los datos del usuario de la solicitud
@@ -47,10 +68,7 @@ const register = async (req, res) => {
   // Hashea la contraseña del usuario
   const hashedPassword = await bcrypt.hash(userPassword, 10);
 
-
-  // Expiración en 7 días
-  const options = { expiresIn: 36000 };
-  const newToken = jwt.sign({ userEmail: userEmail }, process.env.SECRET, options);
+  const newToken = checkToken(req);
   // Inserta el nuevo usuario en la base de datos
   db.query(
     'INSERT INTO users (userName, userEmail, userPassword, userToken) VALUES (?, ?, ?, ?)',
@@ -71,19 +89,11 @@ const logout = (req, res) => {
   // Envía una respuesta al cliente indicando que la sesión ha sido cerrada correctamente
   res.send({ message: 'Logout successful' });
 }
-const renovateToken = (req, res) => {
-  const { userEmail, userPassword, userToken } = req.body;
-  
-  // Generar nuevo token de acceso
-  const options = { expiresIn: '30m' };
-  const secret = process.env.SECRET;
-  const newAccessToken = jwt.sign({userEmail, userPassword, userToken}, secret, options);
-  res.json({ access_token: newAccessToken });
-};
+
 
 module.exports = {
   login,
   register,
   logout,
-  renovateToken
+  generateNewToken
 }
