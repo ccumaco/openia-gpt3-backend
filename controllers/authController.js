@@ -6,22 +6,22 @@ const verifyPassword = async (password, hashedPassword) => {
   return bcrypt.compare(password, hashedPassword);
 }
 
-const getUserInfoFromDB = async (userEmail) => {
+const getUserInfoFromDB = (userEmail) => {
   const query = 'SELECT * FROM users WHERE userEmail = ?'
-  await db.query(query, [userEmail], (error, results) => {
-    console.log(results[0]);
-    if (error) {
-      console.log(error);
-      return null
-    };
-    return results[0];
+  return new Promise((resolve, reject) => {
+    db.query(query, [userEmail], (error, results) => {
+      if (error) {
+        reject(error);
+      }
+      resolve(results[0]);
+    });
   });
 }
 
-const generateNewToken = () => {
+const generateNewToken = (userEmail) => {
   // Obtener información del usuario a partir de la base de datos
   // ...
-  const user = getUserInfoFromDB();
+  const user = getUserInfoFromDB(userEmail);
   
   // Crear payload del token
   const payload = {
@@ -31,7 +31,7 @@ const generateNewToken = () => {
   
   // Generar nuevo token de acceso
   const options = { expiresIn: '30m' };
-  const secret = process.env.SECRET;
+  const secret = process.env.JWT_SECRET;
   const newToken = jwt.sign(payload, secret, options);
   
   return newToken;
@@ -43,12 +43,12 @@ const checkToken = (req) => {
   // Verificar si existe un token
   if (!token) {
     // Generar nuevo token si no existe
-    return generateNewToken();
+    return generateNewToken(req.userEmail);
   }
   
   try {
     // Verificar validez del token existente
-    const decoded = jwt.verify(token, process.env.SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return token;
   } catch(err) {
     // Generar nuevo token si el existente es inválido
@@ -57,8 +57,16 @@ const checkToken = (req) => {
 }
 const login = async (req, res) => {
   const { userEmail } = req.body
-  if (getUserInfoFromDB(userEmail)) {
-    res.send(checkToken(req))
+  const user = await getUserInfoFromDB(userEmail)
+  if (user) {
+    res.send({
+      userId: user.userId,
+      userEmail: user.userEmail,
+      userName: user.userName,
+      userToken: checkToken(req)
+    })
+  } else {
+    res.status(401).send({error: ' algo fallo '})
   }
 };
 const register = async (req, res) => {
@@ -90,10 +98,21 @@ const logout = (req, res) => {
   res.send({ message: 'Logout successful' });
 }
 
+const verifyToken = (req, res) => {
+  const token = req.body.token;
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ valid: false });
+    }
+    // aqui se podria verificar tambien la fecha de expiracion
+    return res.json({ valid: true });
+  });
+}
+
 
 module.exports = {
   login,
   register,
   logout,
-  generateNewToken
+  verifyToken
 }

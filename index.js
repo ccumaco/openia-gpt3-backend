@@ -30,7 +30,7 @@ app.use(session({
     }),
 	resave: true,
     saveUninitialized: true,
-    secret: process.env.SECRET
+    secret: process.env.JWT_SECRET
 }));
 app.use(bodyParser.urlencoded({
     extended: true
@@ -40,15 +40,6 @@ db.getConnection( ( err, connection ) => {
     if (err) throw (err)
     console.log ("DB connected successful: " + connection.threadId)
  })
-
-
-//  sequelize conecct
-//  try {
-//     sequelize.authenticate();
-//     console.log('Connection has been established successfully.');
-//   } catch (error) {
-//     console.error('Unable to connect to the database:', error);
-//   }
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
