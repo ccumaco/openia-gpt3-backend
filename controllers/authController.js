@@ -30,7 +30,7 @@ const generateNewToken = (userEmail) => {
   };
   
   // Generar nuevo token de acceso
-  const options = { expiresIn: '30m' };
+  const options = { expiresIn: '2m' };
   const secret = process.env.JWT_SECRET;
   const newToken = jwt.sign(payload, secret, options);
   
@@ -86,7 +86,7 @@ const register = async (req, res) => {
         console.log(error);
         return res.status(500).send({ error: 'Error al registrar el usuario'});
       }
-      res.send({ message: 'Usuario registrado correctamente', newToken });
+      res.send({ userEmail, userName, userToken: newToken });
     }
   );
 }
@@ -102,7 +102,7 @@ const verifyToken = (req, res) => {
   const token = req.body.token;
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(401).json({ valid: false });
+      return res.json({ valid: false });
     }
     // aqui se podria verificar tambien la fecha de expiracion
     return res.json({ valid: true });
