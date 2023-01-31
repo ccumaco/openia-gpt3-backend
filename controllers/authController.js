@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
+require("dotenv").config()
 
 const verifyPassword = async (password, hashedPassword) => {
   return bcrypt.compare(password, hashedPassword);

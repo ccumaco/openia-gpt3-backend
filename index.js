@@ -1,11 +1,11 @@
 const path = require('path');
+require("dotenv").config()
 const express = require('express');
 const port = process.env.PORT || 5000;
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session)
 const bodyParser = require('body-parser')
 const mysql = require("mysql")
-require("dotenv").config()
 const app = express();
 const morgan = require('morgan')
 const cors = require('cors')
