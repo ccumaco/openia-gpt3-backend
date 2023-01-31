@@ -19,7 +19,7 @@ if (process.env.ENV === 'dev') {
 } else {
    db = mysql.createPool({
       database: DB_DATABASE,
-      username: DB_USER,
+      user: DB_USER,
       host: DB_HOST,
       password: DB_PASSWORD,
       ssl: { rejectUnauthorized: false }
