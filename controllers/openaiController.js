@@ -27,7 +27,6 @@ const generateText = async (req, res) => {
 			automaticHastag,
 			countHashtag,
 		} = req.body;
-		console.log(req.body);
 		prompt = `
         ${prompt}
         ${softMessaje(soft)}
@@ -35,7 +34,6 @@ const generateText = async (req, res) => {
         ${maxLengthText(maxLength)}
         ${generateHastag(automaticHastag, hashtag, countHashtag)}
       `;
-		console.log(prompt);
 		const allResponses = [];
 		for (let i = 0; i < getMaxResponses(maxResponses); i++) {
 			const completion = await openai.createCompletion({

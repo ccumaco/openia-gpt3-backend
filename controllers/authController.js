@@ -31,7 +31,7 @@ const generateNewToken = (userEmail) => {
   };
   
   // Generar nuevo token de acceso
-  const options = { expiresIn: '2m' };
+  const options = { expiresIn: '2d' };
   const secret = process.env.JWT_SECRET;
   const newToken = jwt.sign(payload, secret, options);
   
@@ -56,19 +56,28 @@ const checkToken = (req) => {
     return generateNewToken();
   }
 }
+
+async function comparePassword(userPassword, databasePassword) {
+  const isMatch = await bcrypt.compare(userPassword, databasePassword);
+  return isMatch;
+}
 const login = async (req, res) => {
-  const { userEmail } = req.body
-  const user = await getUserInfoFromDB(userEmail)
+  const { userEmail, userPassword } = req.body;
+  const user = await getUserInfoFromDB(userEmail);
+  if (await comparePassword(userPassword, user.userPassword) === false) {
+    res.send('contraseña o email invalido');
+    return;
+  };
   if (user) {
     res.send({
       userId: user.userId,
       userEmail: user.userEmail,
       userName: user.userName,
       userToken: checkToken(req)
-    })
+    });
   } else {
-    res.status(401).send({error: ' algo fallo '})
-  }
+    res.status(401).send({error: ' algo fallo '});
+  };
 };
 const register = async (req, res) => {
   // Obtén los datos del usuario de la solicitud

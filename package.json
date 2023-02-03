@@ -20,6 +20,7 @@
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.0",
     "memorystore": "^1.6.7",
+    "mercadopago": "^1.5.14",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",

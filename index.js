@@ -46,6 +46,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/openia', require('./routes/openaiRoutes'));
 app.use('/openia', require('./routes/auth'));
+app.use('/openia', require('./routes/routesMercadoPago'));
 
 
 const server = app.listen(port, () => {
