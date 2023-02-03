@@ -1,6 +1,6 @@
 const mercadopago = require('mercadopago');
 
-const back_url = "https://8284-201-244-139-204.ngrok.io/openia/notification"
+const back_url = "https://openia-gpt3-backend-production.up.railway.app/"
 const createPlan = (req, res) => {
     console.log('entroooo');
     /*  Vendedor
@@ -35,7 +35,7 @@ const createPlan = (req, res) => {
           "currency_id": "COP"
         },
         "back_url": {
-            success: back_url
+            success: back_url + 'openia/notification'
         }
       }
 
@@ -81,7 +81,7 @@ const createSuscription = (req, res) => {
           "transaction_amount": 10,
           "currency_id": "COP"
         },
-        "back_url": back_url,
+        "back_url": back_url + 'openia/notification',
         "status": "authorized"
       }
 
