@@ -1,6 +1,6 @@
 const mercadopago = require('mercadopago');
 
-const back_url = "https://openia-gpt3-backend-production.up.railway.app/"
+const back_url = "https://incopy.netlify.app/social-media"
 const createPlan = (req, res) => {
     console.log('entroooo');
     /*  Vendedor
@@ -9,7 +9,7 @@ const createPlan = (req, res) => {
         email: test_user_1300873485@testuser.com
      */
     mercadopago.configure({
-        access_token: 'TEST-3554298348301023-020200-6b6fde46744d71a639f4e05a107a7fd6-1300873485'
+        access_token: 'APP_USR-5735425354520103-020223-1e1a633547d8779f3756f46d5d079ad4-1300901734'
     });
 
     const items = {
@@ -35,7 +35,7 @@ const createPlan = (req, res) => {
           "currency_id": "COP"
         },
         "back_url": {
-            success: back_url + 'openia/notification'
+            success: back_url
         }
       }
 
@@ -81,7 +81,7 @@ const createSuscription = (req, res) => {
           "transaction_amount": 10,
           "currency_id": "COP"
         },
-        "back_url": back_url + 'openia/notification',
+        "back_url": back_url,
         "status": "authorized"
       }
 
