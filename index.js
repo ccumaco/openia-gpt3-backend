@@ -36,10 +36,14 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-db.getConnection( ( err, connection ) => {
-    if (err) throw (err)
-    console.log ("DB connected successful: " + connection.threadId)
- })
+try {
+    db.getConnection( ( err, connection ) => {
+        if (err) throw (err)
+        console.log ("DB connected successful: " + connection.threadId)
+     })
+} catch (error) {
+    console.error('data base cant conect', error)
+}
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));

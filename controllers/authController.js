@@ -1,23 +1,14 @@
 const bcrypt = require('bcrypt');
 const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
+const { getUserInfoFromDB } = require('../utils');
 require("dotenv").config()
 
 const verifyPassword = async (password, hashedPassword) => {
   return bcrypt.compare(password, hashedPassword);
 }
 
-const getUserInfoFromDB = (userEmail) => {
-  const query = 'SELECT * FROM users WHERE userEmail = ?'
-  return new Promise((resolve, reject) => {
-    db.query(query, [userEmail], (error, results) => {
-      if (error) {
-        reject(error);
-      }
-      resolve(results[0]);
-    });
-  });
-}
+
 
 const generateNewToken = (userEmail) => {
   // Obtener información del usuario a partir de la base de datos
@@ -64,11 +55,11 @@ async function comparePassword(userPassword, databasePassword) {
 const login = async (req, res) => {
   const { userEmail, userPassword } = req.body;
   const user = await getUserInfoFromDB(userEmail);
-  if (await comparePassword(userPassword, user.userPassword) === false) {
-    res.send('contraseña o email invalido');
-    return;
-  };
   if (user) {
+    if (await comparePassword(userPassword, user.userPassword) === false) {
+      res.send('contraseña o email invalido');
+      return;
+    };
     res.send({
       userId: user.userId,
       userEmail: user.userEmail,
@@ -76,7 +67,7 @@ const login = async (req, res) => {
       userToken: checkToken(req)
     });
   } else {
-    res.status(401).send({error: ' algo fallo '});
+    res.status(401).send({error: 'no se encuentra el usuario'});
   };
 };
 const register = async (req, res) => {
