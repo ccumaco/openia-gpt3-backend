@@ -144,7 +144,4 @@ const notificationPlan = (req, res) => {
 
 
 module.exports = {
-    createPlan,
-    notificationPlan,
-    createSuscription
 }
