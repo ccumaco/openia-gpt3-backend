@@ -1,3 +1,6 @@
+const { db } = require("../dbServer");
+
+
 const getUserInfoFromDB = (userEmail) => {
   const query = 'SELECT * FROM users WHERE userEmail = ?'
   return new Promise((resolve, reject) => {
