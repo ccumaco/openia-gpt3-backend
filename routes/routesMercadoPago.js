@@ -3,7 +3,7 @@ const { saveTransaction, createPlan, createSuscription, notificationPlan } = req
 const router = express.Router();
 
 // router.post('/create-plan', createPlan);
-router.post('/notification', notificationPlan);
+router.get('/notification', notificationPlan);
 // router.post('/create-suscription', createSuscription);
 // router.post('/save-transaction',  saveTransaction)
 module.exports = router;
