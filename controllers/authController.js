@@ -100,13 +100,13 @@ const logout = (req, res) => {
 }
 
 const verifyToken = (req, res) => {
-  const token = req.body.token;
+  const token = req.headers.authorization;
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      return res.json({ valid: false });
+      return res.status(400).json({ valid: false });
     }
     // aqui se podria verificar tambien la fecha de expiracion
-    return res.json({ valid: true });
+    return res.status(200).json({ valid: true });
   });
 }
 
