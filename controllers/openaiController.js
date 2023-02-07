@@ -5,7 +5,7 @@ const {
 	softMessaje,
 	getLenguaje,
 	maxLengthText,
-	maxResponses,
+	getTitlePrompt,
 	getMaxResponses,
 } = require('../querys/querysPrompt');
 
@@ -40,16 +40,17 @@ const generateText = async (req, res) => {
 				model: 'text-davinci-003',
 				prompt: prompt,
 				stream: false,
-				top_p: top_p,
+				top_p: 1,
+				temperature: 1,
 				max_tokens: 2000,
 			});
 			allResponses.push(completion.data.choices[0].text);
 		}
 		console.log(allResponses, 'allResponses');
-		res.send(allResponses);
+		res.status(200).send(allResponses);
 	} catch (error) {
 		console.error(error.message);
-		res.send('algo a fallado', error);
+		res.status(400).send('algo a fallado', error);
 	}
 };
 const generateImage = async (req, res) => {
@@ -85,5 +86,35 @@ const generateImage = async (req, res) => {
 		});
 	}
 };
+const generateTextFree = async (req, res) => {
+	try {
+		let {
+			prompt,
+			language,
+			soft,
+			titlePrompt
+		} = req.body;
+		prompt = `
+        ${prompt}
+		${getTitlePrompt(titlePrompt)}
+        ${softMessaje(soft)}
+        ${getLenguaje(language)}
+      `;
+	  console.log(prompt);
+		const completion = await openai.createCompletion({
+			model: 'text-davinci-003',
+			prompt: prompt,
+			stream: false,
+			top_p: 1,
+			temperature: 1,
+			max_tokens: 2000,
+		});
+		console.log(completion.data.choices[0].text);
+		res.status(200).send(completion.data.choices[0].text);
+	} catch (error) {
+		console.error(error.message);
+		res.status(400).send('algo a fallado');
+	}
+};
 
-module.exports = { generateImage, generateText };
+module.exports = { generateImage, generateText, generateTextFree };

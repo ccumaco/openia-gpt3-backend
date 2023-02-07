@@ -1,7 +1,6 @@
 
 const generateHastag = (generateHastag = false, hastags, countHashtag) => {
     if (generateHastag && hastags.length == 0) {
-        console.log("primero");
         return `y genera ${countHashtag} hashtags apropiados para el tema`
     } else if (generateHastag && hastags.length > 0) {
         return `y genera ${countHashtag} hashtags apropiados para el tema`
@@ -37,4 +36,7 @@ const getMaxResponses = (maxResponses) => {
     }
     return maxResponses
 }
-module.exports = { generateHastag, getLenguaje, softMessaje, maxLengthText, getMaxResponses };
+const getTitlePrompt = (title) => {
+    return `crea esto como un ${title};`
+}
+module.exports = { generateHastag, getLenguaje, softMessaje, maxLengthText, getMaxResponses, getTitlePrompt };

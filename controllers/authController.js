@@ -57,7 +57,7 @@ const login = async (req, res) => {
   const user = await getUserInfoFromDB(userEmail);
   if (user) {
     if (await comparePassword(userPassword, user.userPassword) === false) {
-      res.send('contraseña o email invalido');
+      res.status(400).send({status: false, message: 'contraseña o email invalido'});
       return;
     };
     res.send({
@@ -67,7 +67,7 @@ const login = async (req, res) => {
       userToken: checkToken(req)
     });
   } else {
-    res.status(401).send({error: 'no se encuentra el usuario'});
+    res.status(401).send({ status: false ,message: 'no se encuentra el usuario'});
   };
 };
 const register = async (req, res) => {
