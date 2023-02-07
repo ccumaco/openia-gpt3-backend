@@ -7,6 +7,8 @@ const {
 	maxLengthText,
 	getTitlePrompt,
 	getMaxResponses,
+	generateSeoWods,
+	generateLikeHTML
 } = require('../querys/querysPrompt');
 
 const configuration = new Configuration({
@@ -46,10 +48,8 @@ const generateText = async (req, res) => {
 			});
 			allResponses.push(completion.data.choices[0].text);
 		}
-		console.log(allResponses, 'allResponses');
 		res.status(200).send(allResponses);
 	} catch (error) {
-		console.error(error.message);
 		res.status(400).send('algo a fallado', error);
 	}
 };
@@ -100,6 +100,64 @@ const generateTextFree = async (req, res) => {
         ${softMessaje(soft)}
         ${getLenguaje(language)}
       `;
+		const completion = await openai.createCompletion({
+			model: 'text-davinci-003',
+			prompt: prompt,
+			stream: false,
+			top_p: 1,
+			temperature: 1,
+			max_tokens: 2000,
+		});
+		res.status(200).send(completion.data.choices[0].text);
+	} catch (error) {
+		res.status(400).send('algo a fallado');
+	}
+};
+const generateEmail = async (req, res) => {
+	try {
+		let {
+			titlePrompt,
+			prompt,
+			language,
+			soft
+		} = req.body;
+		prompt = `
+        ${prompt}
+		${getTitlePrompt(titlePrompt)}
+        ${softMessaje(soft)}
+        ${getLenguaje(language)}
+      `;
+		const completion = await openai.createCompletion({
+			model: 'text-davinci-003',
+			prompt: prompt,
+			stream: false,
+			top_p: 1,
+			temperature: 1,
+			max_tokens: 2000,
+		});
+		res.status(200).send(completion.data.choices[0].text);
+	} catch (error) {
+		res.status(400).send('algo a fallado');
+	}
+};
+const generateArticle = async (req, res) => {
+	try {
+		let {
+			prompt,
+			maxLength,
+			language,
+			soft,
+			keyWords,
+			generateSeoKeyWords,
+		} = req.body;
+		prompt = `
+        ${prompt}
+        ${softMessaje(soft)}
+        ${getLenguaje(language)}
+        ${maxLengthText(maxLength)}
+        ${generateSeoWods(generateSeoKeyWords, keyWords)}
+		${generateLikeHTML()}
+      `;
 	  console.log(prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
@@ -109,12 +167,16 @@ const generateTextFree = async (req, res) => {
 			temperature: 1,
 			max_tokens: 2000,
 		});
-		console.log(completion.data.choices[0].text);
 		res.status(200).send(completion.data.choices[0].text);
 	} catch (error) {
-		console.error(error.message);
-		res.status(400).send('algo a fallado');
+		res.status(400).send('algo a fallado', error);
 	}
 };
 
-module.exports = { generateImage, generateText, generateTextFree };
+module.exports = {
+	generateImage,
+	generateText,
+	generateTextFree,
+	generateArticle,
+	generateEmail
+};

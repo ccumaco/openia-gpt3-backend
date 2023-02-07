@@ -9,6 +9,19 @@ const generateHastag = (generateHastag = false, hastags, countHashtag) => {
     }
     return ''
 }
+const generateSeoWods = (generateSeoKeyWords = false, keyWords) => {
+    if (generateSeoKeyWords && keyWords.length == 0) {
+        return `utiliza las palabras de SEO mas apropiadas para el articulo`
+    } else if (generateSeoKeyWords && keyWords.length > 0) {
+        return `utiliza las palabras de SEO mas apropiadas para el articulo`
+    } else if(!generateSeoKeyWords && keyWords.length > 0){
+        return `Utiliza estas palabras para el SEO ${keyWords}`
+    }
+    return ''
+}
+const generateLikeHTML = () => {
+    return 'generalo como HTML';
+}
 const getLenguaje = (language) => {
     if (language) {
         return `esta respuesta la quiero en ${language};`
@@ -39,4 +52,13 @@ const getMaxResponses = (maxResponses) => {
 const getTitlePrompt = (title) => {
     return `crea esto como un ${title};`
 }
-module.exports = { generateHastag, getLenguaje, softMessaje, maxLengthText, getMaxResponses, getTitlePrompt };
+module.exports = {
+    generateHastag,
+    getLenguaje,
+    softMessaje,
+    maxLengthText,
+    getMaxResponses,
+    getTitlePrompt,
+    generateSeoWods,
+    generateLikeHTML
+};
