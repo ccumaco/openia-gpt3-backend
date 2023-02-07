@@ -8,7 +8,8 @@ const {
 	getTitlePrompt,
 	getMaxResponses,
 	generateSeoWods,
-	generateLikeHTML
+	generateLikeHTML,
+	likeEmail
 } = require('../querys/querysPrompt');
 
 const configuration = new Configuration({
@@ -113,7 +114,7 @@ const generateTextFree = async (req, res) => {
 		res.status(400).send('algo a fallado');
 	}
 };
-const generateEmail = async (req, res) => {
+const generateLikeEmail = async (req, res) => {
 	try {
 		let {
 			titlePrompt,
@@ -122,6 +123,7 @@ const generateEmail = async (req, res) => {
 			soft
 		} = req.body;
 		prompt = `
+		${likeEmail()}
         ${prompt}
 		${getTitlePrompt(titlePrompt)}
         ${softMessaje(soft)}
@@ -178,5 +180,5 @@ module.exports = {
 	generateText,
 	generateTextFree,
 	generateArticle,
-	generateEmail
+	generateLikeEmail
 };

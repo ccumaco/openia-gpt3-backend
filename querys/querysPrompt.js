@@ -22,6 +22,9 @@ const generateSeoWods = (generateSeoKeyWords = false, keyWords) => {
 const generateLikeHTML = () => {
     return 'generalo como HTML';
 }
+const likeEmail = () => {
+    return 'esto es un correo';
+}
 const getLenguaje = (language) => {
     if (language) {
         return `esta respuesta la quiero en ${language};`
@@ -60,5 +63,6 @@ module.exports = {
     getMaxResponses,
     getTitlePrompt,
     generateSeoWods,
-    generateLikeHTML
+    generateLikeHTML,
+    likeEmail
 };
