@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
 const { getUserInfoFromDB } = require('../utils');
+const User = require('../models/users');
 require("dotenv").config()
 
 const verifyPassword = async (password, hashedPassword) => {
@@ -54,42 +55,59 @@ async function comparePassword(userPassword, databasePassword) {
 }
 const login = async (req, res) => {
   const { userEmail, userPassword } = req.body;
-  const user = await getUserInfoFromDB(userEmail);
-  if (user) {
-    if (await comparePassword(userPassword, user.userPassword) === false) {
-      res.status(400).send({status: false, message: 'contraseña o email invalido'});
-      return;
-    };
-    res.send({
-      userId: user.userId,
-      userEmail: user.userEmail,
-      userName: user.userName,
-      userToken: checkToken(req)
-    });
-  } else {
-    res.status(401).send({ status: false ,message: 'no se encuentra el usuario'});
-  };
+
+  // Busca al usuario en la base de datos
+  const user = await User.findOne({ where: { userEmail } });
+
+  // Si el usuario no existe, devuelve un error
+  if (!user) {
+      return res.status(400).json({ message: 'El correo electrónico o la contraseña son incorrectos.' });
+  }
+
+  // Verifica la contraseña del usuario
+  const isMatch = await bcrypt.compare(userPassword, user.userPassword);
+
+  // Si la contraseña no coincide, devuelve un error
+  if (!isMatch) {
+      return res.status(400).json({ message: 'El correo electrónico o la contraseña son incorrectos.' });
+  }
+
+  // Genera un token JWT para el usuario
+  const token = jwt.sign({ userId: user.userId }, 'secreto');
+
+  // Devuelve el token al cliente
+  res.json({ token, valid: true });
 };
 const register = async (req, res) => {
-  // Obtén los datos del usuario de la solicitud
-  const { userName, userEmail, userPassword } = req.body;
+  try {
+    const { userName, userEmail, userPassword } = req.body;
 
-  // Hashea la contraseña del usuario
-  const hashedPassword = await bcrypt.hash(userPassword, 10);
-
-  const newToken = checkToken(req);
-  // Inserta el nuevo usuario en la base de datos
-  db.query(
-    'INSERT INTO users (userName, userEmail, userPassword, userToken) VALUES (?, ?, ?, ?)',
-    [userName, userEmail, hashedPassword, newToken],
-    (error, results) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).send({ error: 'Error al registrar el usuario'});
-      }
-      res.send({ userEmail, userName, userToken: newToken });
+    // Validar los datos recibidos
+    if (!userName) {
+      return res.status(400).json({ message: 'El nombre de usuario es requerido' });
     }
-  );
+
+    if (!userEmail) {
+      return res.status(400).json({ message: 'El correo electrónico es requerido' });
+    }
+
+    if (!userPassword) {
+      return res.status(400).json({ message: 'La contraseña es requerida' });
+    }
+
+    // Crear un nuevo usuario en la base de datos
+    const newUser = await User.create({
+      userName,
+      userEmail,
+      userPassword
+    });
+
+    // Enviar la respuesta al cliente
+    res.status(201).json({ message: 'Usuario registrado exitosamente', newUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al registrar el usuario' });
+  }
 }
 const logout = (req, res) => {
   // Elimina el userToken de acceso del usuario (ejemplo con cookie)
@@ -110,10 +128,27 @@ const verifyToken = (req, res) => {
   });
 }
 
+const validateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: 'Token inválido' });
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.status(401).json({ message: 'Token no proporcionado' });
+  }
+}
+
 
 module.exports = {
   login,
   register,
   logout,
-  verifyToken
+  verifyToken,
+  validateToken
 }

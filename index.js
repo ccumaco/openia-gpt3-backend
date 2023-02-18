@@ -9,7 +9,8 @@ const mysql = require("mysql")
 const app = express();
 const morgan = require('morgan')
 const cors = require('cors')
-const {db} = require('./dbServer')
+const {db} = require('./dbServer');
+const database = require('./dbSequelize');
 
 var corsOptions = {
 	origin: ['https://incopy.netlify.app', 'http://127.0.0.1:5173', 'http://localhost:5173'],
@@ -36,14 +37,24 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-try {
-    db.getConnection( ( err, connection ) => {
-        if (err) throw (err)
-        console.log ("DB connected successful: " + connection.threadId)
-     })
-} catch (error) {
-    console.error('data base cant conect', error)
-}
+// try {
+//     db.getConnection( ( err, connection ) => {
+//         if (err) throw (err)
+//         console.log ("DB connected successful: " + connection.threadId)
+//      })
+// } catch (error) {
+//     console.error('data base cant conect', error)
+// }
+( async () => {
+    try {
+        await database.authenticate()
+        await database.sync()
+        console.log('se conecto a la base de datos');
+    } catch (error) {
+        console.log('no se conecto a la base de datos');
+        throw new Error(error)
+    }
+})()
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));

@@ -4,6 +4,6 @@ const router = express.Router();
 
 // router.post('/create-plan', createPlan);
 router.post('/notification', notificationPlan);
-// router.post('/create-suscription', createSuscription);
+router.post('/create-suscription', createSuscription);
 // router.post('/save-transaction',  saveTransaction)
 module.exports = router;

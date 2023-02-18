@@ -27,7 +27,8 @@
     "mysql2": "^2.3.3",
     "openai": "^3.1.0",
     "sequelize": "^6.28.0",
-    "session": "^0.1.0"
+    "session": "^0.1.0",
+    "sqlite3": "^5.1.4"
   },
   "devDependencies": {
     "dotenv": "^16.0.3",
