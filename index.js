@@ -36,15 +36,6 @@ app.use(session({
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-
-// try {
-//     db.getConnection( ( err, connection ) => {
-//         if (err) throw (err)
-//         console.log ("DB connected successful: " + connection.threadId)
-//      })
-// } catch (error) {
-//     console.error('data base cant conect', error)
-// }
 ( async () => {
     try {
         await database.authenticate()

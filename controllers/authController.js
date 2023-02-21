@@ -74,9 +74,9 @@ const login = async (req, res) => {
 
   // Genera un token JWT para el usuario
   const token = jwt.sign({ userId: user.userId }, 'secreto');
-
+  req.session.user = user;
   // Devuelve el token al cliente
-  res.json({ token, valid: true });
+  res.json({ "userToken": token, valid: true });
 };
 const register = async (req, res) => {
   try {
@@ -112,43 +112,13 @@ const register = async (req, res) => {
 const logout = (req, res) => {
   // Elimina el userToken de acceso del usuario (ejemplo con cookie)
   res.clearCookie('accessToken');
-
+  req.session.destroy()
   // Envía una respuesta al cliente indicando que la sesión ha sido cerrada correctamente
   res.send({ message: 'Logout successful' });
 }
 
-const verifyToken = (req, res) => {
-  const token = req.headers.authorization;
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(400).json({ valid: false });
-    }
-    // aqui se podria verificar tambien la fecha de expiracion
-    return res.status(200).json({ valid: true });
-  });
-}
-
-const validateToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
-      if (err) {
-        return res.status(403).json({ message: 'Token inválido' });
-      }
-      req.user = user;
-      next();
-    });
-  } else {
-    res.status(401).json({ message: 'Token no proporcionado' });
-  }
-}
-
-
 module.exports = {
   login,
   register,
-  logout,
-  verifyToken,
-  validateToken
+  logout
 }
