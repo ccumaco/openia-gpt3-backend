@@ -36,6 +36,7 @@ const generateText = async (req, res) => {
         ${getLenguaje(language)}
         ${maxLengthText(maxLength)}
         ${generateHastag(automaticHastag, hashtag, countHashtag)}
+		${generateLikeHTML()}
       `;
 		const allResponses = [];
 		for (let i = 0; i < getMaxResponses(maxResponses); i++) {
@@ -100,6 +101,7 @@ const generateTextFree = async (req, res) => {
 		${getTitlePrompt(titlePrompt)}
         ${softMessaje(soft)}
         ${getLenguaje(language)}
+		${generateLikeHTML()}
       `;
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
@@ -128,6 +130,7 @@ const generateLikeEmail = async (req, res) => {
 		${getTitlePrompt(titlePrompt)}
         ${softMessaje(soft)}
         ${getLenguaje(language)}
+		${generateLikeHTML()}
       `;
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
