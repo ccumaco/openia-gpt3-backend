@@ -9,7 +9,8 @@ const {
 	getMaxResponses,
 	generateSeoWods,
 	generateLikeHTML,
-	likeEmail
+	likeEmail,
+	addImages
 } = require('../querys/querysPrompt');
 
 const configuration = new Configuration({
@@ -154,6 +155,7 @@ const generateArticle = async (req, res) => {
 			soft,
 			keyWords,
 			generateSeoKeyWords,
+			generateImages
 		} = req.body;
 		prompt = `
         ${prompt}
@@ -161,6 +163,7 @@ const generateArticle = async (req, res) => {
         ${getLenguaje(language)}
         ${maxLengthText(maxLength)}
         ${generateSeoWods(generateSeoKeyWords, keyWords)}
+		${addImages(generateImages)}
 		${generateLikeHTML()}
       `;
 	  console.log(prompt);
@@ -169,7 +172,7 @@ const generateArticle = async (req, res) => {
 			prompt: prompt,
 			stream: false,
 			top_p: 1,
-			temperature: 1,
+			temperature: 0,
 			max_tokens: 2000,
 		});
 		res.status(200).send(completion.data.choices[0].text);

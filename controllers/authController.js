@@ -110,10 +110,62 @@ const verifyToken = (req, res) => {
   });
 }
 
+const recoveryPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!validator.isEmail(email)) {
+      console.warn('Dirección de correo electrónico inválida');
+      res.status(400).send('Dirección de correo electrónico inválida');
+      return;
+    }
+
+    const results = await query('SELECT * FROM users WHERE email = ?', [mysql.escape(email)]);
+
+    if (results.length === 0) {
+      console.warn('Usuario no encontrado');
+      res.status(404).send('Usuario no encontrado');
+      return;
+    }
+
+    const resetToken = Math.random().toString(36).slice(-8);
+
+    await query('UPDATE users SET reset_token = ? WHERE id = ?', [resetToken, results[0].id]);
+
+    // Configurar el correo electrónico a enviar
+    const mailOptions = {
+      from: 'testing-email@gmail.com',
+      to: email,
+      subject: 'Recuperación de contraseña',
+      html: `
+        <p>Hola,</p>
+        <p>Hemos recibido una solicitud para recuperar la contraseña de tu cuenta.</p>
+        <p>Para continuar, haz clic en el siguiente enlace:</p>
+        <p><a href="http://localhost:3000/reset-password?token=${resetToken}">Recuperar Contraseña</a></p>
+        <p>Si no solicitaste esta recuperación, por favor ignora este mensaje.</p>`
+    };
+
+    // Enviar el correo electrónico
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error('Error al enviar el correo electrónico: ', err);
+        res.status(500).send('Error al enviar el correo electrónico');
+        return;
+      }
+
+      console.log(`Correo electrónico enviado a ${email}: `, info);
+      res.status(200).send('Correo electrónico enviado');
+    });
+  } catch (err) {
+    console.error('Error al recuperar la contraseña: ', err);
+    res.status(500).send('Error al recuperar la contraseña');
+  }
+};
 
 module.exports = {
   login,
   register,
   logout,
-  verifyToken
+  verifyToken,
+  recoveryPassword
 }

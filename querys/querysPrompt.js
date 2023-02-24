@@ -55,6 +55,11 @@ const getMaxResponses = (maxResponses) => {
 const getTitlePrompt = (title) => {
     return `crea esto como un ${title};`
 }
+const addImages = (flag) => {
+    if (flag) {
+        return `agrega imagenes buscadas en web sobre el tema;`
+    }
+}
 module.exports = {
     generateHastag,
     getLenguaje,
@@ -64,5 +69,6 @@ module.exports = {
     getTitlePrompt,
     generateSeoWods,
     generateLikeHTML,
-    likeEmail
+    likeEmail,
+    addImages
 };
