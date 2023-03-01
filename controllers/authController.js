@@ -3,6 +3,13 @@ const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
 const { getUserInfoFromDB } = require('../utils');
 require("dotenv").config()
+const validator = require('validator');
+const nodemailer = require("nodemailer");
+const { successEmail } = require('../Emails/html');
+const { transporter } = require('../Emails/mailer');
+
+
+
 
 const verifyPassword = async (password, hashedPassword) => {
   return bcrypt.compare(password, hashedPassword);
@@ -14,35 +21,35 @@ const generateNewToken = (userEmail) => {
   // Obtener información del usuario a partir de la base de datos
   // ...
   const user = getUserInfoFromDB(userEmail);
-  
+
   // Crear payload del token
   const payload = {
     userId: user.id,
     email: user.email
   };
-  
+
   // Generar nuevo token de acceso
   const options = { expiresIn: '2d' };
   const secret = process.env.JWT_SECRET;
   const newToken = jwt.sign(payload, secret, options);
-  
+
   return newToken;
 }
 const checkToken = (req) => {
   // Obtener token del encabezado de la petición
   const token = req.headers['authorization'];
-  
+
   // Verificar si existe un token
   if (!token) {
     // Generar nuevo token si no existe
     return generateNewToken(req.userEmail);
   }
-  
+
   try {
     // Verificar validez del token existente
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return token;
-  } catch(err) {
+  } catch (err) {
     // Generar nuevo token si el existente es inválido
     return generateNewToken();
   }
@@ -57,7 +64,7 @@ const login = async (req, res) => {
   const user = await getUserInfoFromDB(userEmail);
   if (user) {
     if (await comparePassword(userPassword, user.userPassword) === false) {
-      res.status(400).send({status: false, message: 'contraseña o email invalido'});
+      res.status(400).send({ status: false, message: 'contraseña o email invalido' });
       return;
     };
     res.send({
@@ -67,7 +74,7 @@ const login = async (req, res) => {
       userToken: checkToken(req)
     });
   } else {
-    res.status(401).send({ status: false ,message: 'no se encuentra el usuario'});
+    res.status(401).send({ status: false, message: 'no se encuentra el usuario' });
   };
 };
 const register = async (req, res) => {
@@ -85,7 +92,7 @@ const register = async (req, res) => {
     (error, results) => {
       if (error) {
         console.log(error);
-        return res.status(500).send({ error: 'Error al registrar el usuario'});
+        return res.status(500).send({ error: 'Error al registrar el usuario' });
       }
       res.send({ userEmail, userName, userToken: newToken });
     }
@@ -111,54 +118,39 @@ const verifyToken = (req, res) => {
 }
 
 const recoveryPassword = async (req, res) => {
+  const { email, userId } = req.body;
   try {
-    const { email } = req.body;
-
     if (!validator.isEmail(email)) {
-      console.warn('Dirección de correo electrónico inválida');
       res.status(400).send('Dirección de correo electrónico inválida');
       return;
     }
 
-    const results = await query('SELECT * FROM users WHERE email = ?', [mysql.escape(email)]);
-
+    const results = await db.query('SELECT * FROM users WHERE userEmail = ?', [db.escape(email)]);
     if (results.length === 0) {
-      console.warn('Usuario no encontrado');
       res.status(404).send('Usuario no encontrado');
       return;
     }
 
     const resetToken = Math.random().toString(36).slice(-8);
 
-    await query('UPDATE users SET reset_token = ? WHERE id = ?', [resetToken, results[0].id]);
-
-    // Configurar el correo electrónico a enviar
-    const mailOptions = {
-      from: 'testing-email@gmail.com',
+    const query = 'UPDATE users SET reset_token = ? WHERE userId = ?'
+    await db.query(query, [resetToken, userId]);
+    let objToRecoveryPassword = {
+      from: 'Arquitext <recovery@arquitext.com>',
       to: email,
-      subject: 'Recuperación de contraseña',
-      html: `
-        <p>Hola,</p>
-        <p>Hemos recibido una solicitud para recuperar la contraseña de tu cuenta.</p>
-        <p>Para continuar, haz clic en el siguiente enlace:</p>
-        <p><a href="http://localhost:3000/reset-password?token=${resetToken}">Recuperar Contraseña</a></p>
-        <p>Si no solicitaste esta recuperación, por favor ignora este mensaje.</p>`
-    };
+      subject: "Recuperar Contraseña de tu cuenta Incopy",
+      html: successEmail(resetToken),
+    }
 
-    // Enviar el correo electrónico
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.error('Error al enviar el correo electrónico: ', err);
-        res.status(500).send('Error al enviar el correo electrónico');
-        return;
-      }
+    let info = await transporter.sendMail(objToRecoveryPassword);
 
-      console.log(`Correo electrónico enviado a ${email}: `, info);
-      res.status(200).send('Correo electrónico enviado');
+    return res.status(200).send({
+      messageId: info.messageId,
+      message: "Envio exitoso"
     });
   } catch (err) {
     console.error('Error al recuperar la contraseña: ', err);
-    res.status(500).send('Error al recuperar la contraseña');
+    res.status(500).send({ error: 'Error al recuperar la contraseña' });
   }
 };
 

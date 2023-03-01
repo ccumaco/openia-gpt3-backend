@@ -104,6 +104,7 @@ const generateTextFree = async (req, res) => {
         ${getLenguaje(language)}
 		${generateLikeHTML()}
       `;
+	  console.log(prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,

@@ -38,7 +38,9 @@ app.use(bodyParser.urlencoded({
 
 try {
     db.getConnection( ( err, connection ) => {
-        if (err) throw (err)
+        if (err) {
+            throw (err)
+        }
         console.log ("DB connected successful: " + connection.threadId)
      })
 } catch (error) {
