@@ -16,7 +16,6 @@ const verifyPassword = async (password, hashedPassword) => {
 }
 
 
-
 const generateNewToken = (userEmail) => {
   // Obtener información del usuario a partir de la base de datos
   // ...
@@ -92,7 +91,7 @@ const register = async (req, res) => {
     (error, results) => {
       if (error) {
         console.log(error);
-        return res.status(500).send({ error: 'Error al registrar el usuario' });
+        return res.status(500).send({ message: 'Error al registrar el usuario' });
       }
       res.send({ userEmail, userName, userToken: newToken });
     }
@@ -118,46 +117,62 @@ const verifyToken = (req, res) => {
 }
 
 const recoveryPassword = async (req, res) => {
-  const { email, userId } = req.body;
+  const { email } = req.body;
   try {
     if (!validator.isEmail(email)) {
-      res.status(400).send('Dirección de correo electrónico inválida');
+      res.status(400).send({message: 'Dirección de correo electrónico inválida'});
       return;
     }
 
-    const results = await db.query('SELECT * FROM users WHERE userEmail = ?', [db.escape(email)]);
+    const results = await db.query('SELECT * FROM users WHERE userEmail = ?', [email]);
     if (results.length === 0) {
-      res.status(404).send('Usuario no encontrado');
+      res.status(404).send({message: 'Usuario no encontrado'});
       return;
     }
 
-    const resetToken = Math.random().toString(36).slice(-8);
+    const resetToken = generateNewToken(email);
 
-    const query = 'UPDATE users SET reset_token = ? WHERE userId = ?'
-    await db.query(query, [resetToken, userId]);
+    const query = 'UPDATE users SET reset_token = ? WHERE userEmail = ?'
+    const updatedToken = await db.query(query, [resetToken, email]);
     let objToRecoveryPassword = {
       from: 'Arquitext <recovery@arquitext.com>',
       to: email,
       subject: "Recuperar Contraseña de tu cuenta Incopy",
-      html: successEmail(resetToken),
+      html: successEmail(resetToken, email),
     }
 
     let info = await transporter.sendMail(objToRecoveryPassword);
 
     return res.status(200).send({
       messageId: info.messageId,
-      message: "Envio exitoso"
+      message: "Se a enviado exitosamente a tu correo un link para recuperar tu contraseña"
     });
   } catch (err) {
     console.error('Error al recuperar la contraseña: ', err);
-    res.status(500).send({ error: 'Error al recuperar la contraseña' });
+    res.status(500).send({ message: 'Error al recuperar la contraseña' });
   }
 };
+
+const verifyTokenEmail = async (req, res) => {
+  const { email, token } = req.body;
+  console.log(token);
+  const tokenValidated = await jwt.verify(token, process.env.JWT_SECRET)
+  if (tokenValidated) {
+    res.status(200).send({
+      message: "el token se a validado exitosamente puedes cambiar tu contraseña"
+    })
+  } else {
+    res.status(404).send({
+      message: "el token o email no son validos"
+    })
+  }
+}
 
 module.exports = {
   login,
   register,
   logout,
   verifyToken,
-  recoveryPassword
+  recoveryPassword,
+  verifyTokenEmail
 }
