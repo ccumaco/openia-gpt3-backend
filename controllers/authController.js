@@ -62,6 +62,7 @@ const login = async (req, res) => {
   const { userEmail, userPassword } = req.body;
   const user = await getUserInfoFromDB(userEmail);
   if (user) {
+    console.log(userPassword, user.userPassword, 'userPassword, user.userPassword');
     if (await comparePassword(userPassword, user.userPassword) === false) {
       res.status(400).send({ status: false, message: 'contraseña o email invalido' });
       return;
@@ -118,6 +119,7 @@ const verifyToken = (req, res) => {
 
 const recoveryPassword = async (req, res) => {
   const { email } = req.body;
+  console.log(email);
   try {
     if (!validator.isEmail(email)) {
       res.status(400).send({message: 'Dirección de correo electrónico inválida'});
@@ -131,7 +133,7 @@ const recoveryPassword = async (req, res) => {
     }
 
     const resetToken = generateNewToken(email);
-
+    console.log(resetToken, email, 'resetToken, email');
     const query = 'UPDATE users SET reset_token = ? WHERE userEmail = ?'
     const updatedToken = await db.query(query, [resetToken, email]);
     let objToRecoveryPassword = {
@@ -168,11 +170,31 @@ const verifyTokenEmail = async (req, res) => {
   }
 }
 
+const newPassword = async (req, res) => {
+  const { newPassword, repeatPassword, token } = req.body;
+console.log(newPassword, repeatPassword, 'token');
+console.log(token, 'token');
+  if (newPassword != repeatPassword) return res.status(400).send({message: "Las contraseñas no coinciden"})
+  if (newPassword.length < 5) return res.status(400).send({message: "La contraseña tiene menos de 5 caracteres"})
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const query = "UPDATE users SET userPassword = ? WHERE reset_token = ?";
+  try {
+    const results = await db.query(query, [hashedPassword, token])
+    res.status(200).send({
+      message:"La contraseña se a cambiado "
+    })
+  } catch (error) {
+    console.log(error, "algo fallo");
+    res.status(404).send("algo fallo")
+  }
+}
+
 module.exports = {
   login,
   register,
   logout,
   verifyToken,
   recoveryPassword,
-  verifyTokenEmail
+  verifyTokenEmail,
+  newPassword
 }
