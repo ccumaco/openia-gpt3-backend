@@ -5,13 +5,26 @@ const DB_USER = process.env.DB_USER
 const DB_PASSWORD = process.env.DB_PASSWORD
 const DB_DATABASE = process.env.DB_DATABASE
 const DB_PORT = process.env.DB_PORT
-
-
-const database = new Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, {
+let config;
+if (process.env.ENV == 'dev') {
+    config = {
+      host: DB_HOST,
+      dialect: 'mysql',
+  }
+} else {
+  config = {
     host: DB_HOST,
-    dialect: 'mysql',
-    ssl: { rejectUnauthorized: false }
-  });
+      dialect: 'mysql',
+      dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    }
+  }
+}
+
+const database = new Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, config);
 
 
 
