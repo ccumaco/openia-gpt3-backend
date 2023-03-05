@@ -95,7 +95,7 @@ const register = async (req, res) => {
       userPassword: password,
       userToken: newToken
     });
-    res.send(user);
+    res.send({user, status: 200});
   } catch (error) {
     res.status(404).send({ errors: error.errors });
   }

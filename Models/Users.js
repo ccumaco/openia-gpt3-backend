@@ -50,7 +50,7 @@ const User = database.define('users', {
         }
       }
     },
-    createdAt: DataTypes.DATE,
+    createdat: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     userPlan: {
         type: DataTypes.STRING,
