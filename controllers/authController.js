@@ -1,12 +1,13 @@
 const bcrypt = require('bcrypt');
 const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
-const { getUserInfoFromDB } = require('../utils');
+const { getUserInfoFromDB, hashedPassword } = require('../utils');
 require("dotenv").config()
 const validator = require('validator');
 const nodemailer = require("nodemailer");
 const { successEmail } = require('../Emails/html');
 const { transporter } = require('../Emails/mailer');
+const User = require('../models/users');
 
 
 
@@ -16,10 +17,10 @@ const verifyPassword = async (password, hashedPassword) => {
 }
 
 
-const generateNewToken = (userEmail) => {
+const generateNewToken = async (userEmail) => {
   // Obtener información del usuario a partir de la base de datos
   // ...
-  const user = getUserInfoFromDB(userEmail);
+  const user = await User.findOne({ where: { userEmail: userEmail } })
 
   // Crear payload del token
   const payload = {
@@ -34,14 +35,14 @@ const generateNewToken = (userEmail) => {
 
   return newToken;
 }
-const checkToken = (req) => {
+const checkToken = async (req, userEmail) => {
   // Obtener token del encabezado de la petición
   const token = req.headers['authorization'];
 
   // Verificar si existe un token
   if (!token) {
     // Generar nuevo token si no existe
-    return generateNewToken(req.userEmail);
+    return await generateNewToken(req.userEmail);
   }
 
   try {
@@ -50,54 +51,55 @@ const checkToken = (req) => {
     return token;
   } catch (err) {
     // Generar nuevo token si el existente es inválido
-    return generateNewToken();
+    return await generateNewToken(userEmail);
   }
 }
 
-async function comparePassword(userPassword, databasePassword) {
+const comparePassword = async (userPassword, databasePassword) => {
   const isMatch = await bcrypt.compare(userPassword, databasePassword);
   return isMatch;
 }
 const login = async (req, res) => {
   const { userEmail, userPassword } = req.body;
-  const user = await getUserInfoFromDB(userEmail);
+  if (!userEmail || !userPassword) {
+    return res.status(400).send({ status: false, message: 'falta correo o contraseña' });
+  }
+  console.log(userEmail, userPassword, 'userEmail, userEmailuserEmailuserEmail');
+  const user = await User.findOne({ where: { userEmail: userEmail } })
   if (user) {
-    console.log(userPassword, user.userPassword, 'userPassword, user.userPassword');
     if (await comparePassword(userPassword, user.userPassword) === false) {
       res.status(400).send({ status: false, message: 'contraseña o email invalido' });
       return;
     };
-    res.send({
+    const userToken = await checkToken(req, userEmail)
+    res.status(200).send({
       userId: user.userId,
       userEmail: user.userEmail,
       userName: user.userName,
-      userToken: checkToken(req)
+      userPlan: user.userPlan,
+      userStatus: user.userStatus,
+      userToken
     });
   } else {
     res.status(401).send({ status: false, message: 'no se encuentra el usuario' });
   };
 };
 const register = async (req, res) => {
-  // Obtén los datos del usuario de la solicitud
   const { userName, userEmail, userPassword } = req.body;
-
-  // Hashea la contraseña del usuario
-  const hashedPassword = await bcrypt.hash(userPassword, 10);
-
-  const newToken = checkToken(req);
-  // Inserta el nuevo usuario en la base de datos
-  db.query(
-    'INSERT INTO users (userName, userEmail, userPassword, userToken) VALUES (?, ?, ?, ?)',
-    [userName, userEmail, hashedPassword, newToken],
-    (error, results) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).send({ message: 'Error al registrar el usuario' });
-      }
-      res.send({ userEmail, userName, userToken: newToken });
-    }
-  );
-}
+  try {
+    const password = await hashedPassword(userPassword);
+    const newToken = jwt.sign({ userEmail }, process.env.JWT_SECRET);
+    const user = await User.create({
+      userName,
+      userEmail,
+      userPassword: password,
+      userToken: newToken
+    });
+    res.send(user);
+  } catch (error) {
+    res.status(404).send({ errors: error.errors });
+  }
+};
 const logout = (req, res) => {
   // Elimina el userToken de acceso del usuario (ejemplo con cookie)
   res.clearCookie('accessToken');
@@ -119,39 +121,44 @@ const verifyToken = (req, res) => {
 
 const recoveryPassword = async (req, res) => {
   const { email } = req.body;
-  console.log(email);
+  if (!validator.isEmail(email)) {
+    res.status(400).send({ message: 'Dirección de correo electrónico inválida' });
+    return;
+  }
+
+  const user = await User.findOne({ where: { userEmail: email } });
+  if (!user) {
+    res.status(404).send({ message: 'Usuario no encontrado' });
+    return;
+  }
+
+  const resetToken = await generateNewToken(email);
   try {
-    if (!validator.isEmail(email)) {
-      res.status(400).send({message: 'Dirección de correo electrónico inválida'});
-      return;
+    const result = await User.update(
+      { reset_token: resetToken },
+      { where: { userEmail: email } }
+    );
+    if (result.length) {
+      let objToRecoveryPassword = {
+        from: 'Arquitext <recovery@arquitext.com>',
+        to: email,
+        subject: "Recuperar Contraseña de tu cuenta Incopy",
+        html: successEmail(resetToken, email),
+      }
+  
+      let info = await transporter.sendMail(objToRecoveryPassword);
+  
+      return res.status(200).send({
+        messageId: info.messageId,
+        message: "Se a enviado exitosamente a tu correo un link para recuperar tu contraseña"
+      });
+    } else {
+      throw new Error;
     }
-
-    const results = await db.query('SELECT * FROM users WHERE userEmail = ?', [email]);
-    if (results.length === 0) {
-      res.status(404).send({message: 'Usuario no encontrado'});
-      return;
-    }
-
-    const resetToken = generateNewToken(email);
-    console.log(resetToken, email, 'resetToken, email');
-    const query = 'UPDATE users SET reset_token = ? WHERE userEmail = ?'
-    const updatedToken = await db.query(query, [resetToken, email]);
-    let objToRecoveryPassword = {
-      from: 'Arquitext <recovery@arquitext.com>',
-      to: email,
-      subject: "Recuperar Contraseña de tu cuenta Incopy",
-      html: successEmail(resetToken, email),
-    }
-
-    let info = await transporter.sendMail(objToRecoveryPassword);
-
-    return res.status(200).send({
-      messageId: info.messageId,
-      message: "Se a enviado exitosamente a tu correo un link para recuperar tu contraseña"
-    });
-  } catch (err) {
-    console.error('Error al recuperar la contraseña: ', err);
+  } catch (error) {
+    console.error('Error al recuperar la contraseña: ', error);
     res.status(500).send({ message: 'Error al recuperar la contraseña' });
+    return false;
   }
 };
 
@@ -172,16 +179,16 @@ const verifyTokenEmail = async (req, res) => {
 
 const newPassword = async (req, res) => {
   const { newPassword, repeatPassword, token } = req.body;
-console.log(newPassword, repeatPassword, 'token');
-console.log(token, 'token');
-  if (newPassword != repeatPassword) return res.status(400).send({message: "Las contraseñas no coinciden"})
-  if (newPassword.length < 5) return res.status(400).send({message: "La contraseña tiene menos de 5 caracteres"})
+  console.log(newPassword, repeatPassword, 'token');
+  console.log(token, 'token');
+  if (newPassword != repeatPassword) return res.status(400).send({ message: "Las contraseñas no coinciden" })
+  if (newPassword.length < 5) return res.status(400).send({ message: "La contraseña tiene menos de 5 caracteres" })
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   const query = "UPDATE users SET userPassword = ? WHERE reset_token = ?";
   try {
     const results = await db.query(query, [hashedPassword, token])
     res.status(200).send({
-      message:"La contraseña se a cambiado "
+      message: "La contraseña se a cambiado "
     })
   } catch (error) {
     console.log(error, "algo fallo");

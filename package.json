@@ -28,7 +28,7 @@
     "mysql2": "^2.3.3",
     "nodemailer": "^6.9.1",
     "openai": "^3.1.0",
-    "sequelize": "^6.28.0",
+    "sequelize": "^6.29.0",
     "session": "^0.1.0"
   },
   "devDependencies": {
