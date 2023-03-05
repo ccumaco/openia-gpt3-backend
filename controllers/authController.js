@@ -7,7 +7,7 @@ const validator = require('validator');
 const nodemailer = require("nodemailer");
 const { successEmail } = require('../Emails/html');
 const { transporter } = require('../Emails/mailer');
-const User = require('../models/users');
+const User = require('../Models/users');
 
 
 
