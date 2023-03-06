@@ -97,7 +97,7 @@ const register = async (req, res) => {
     });
     res.send({user, status: 200});
   } catch (error) {
-    res.status(404).send({ errors: error.errors });
+    res.status(404).send({ errors: error.errors, error });
   }
 };
 const logout = (req, res) => {

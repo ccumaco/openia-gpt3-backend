@@ -50,8 +50,6 @@ const User = database.define('users', {
         }
       }
     },
-    createdat: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
     userPlan: {
         type: DataTypes.STRING,
         defaultValue: 'free'
@@ -65,7 +63,7 @@ const User = database.define('users', {
     },
     reset_token: {
       type: DataTypes.STRING,
-
+      defaultValue: ''
     }
 });
 module.exports = User
