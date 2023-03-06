@@ -9,7 +9,6 @@ const mysql = require("mysql")
 const app = express();
 const morgan = require('morgan')
 const cors = require('cors')
-const {db} = require('./dbServer')
 const { database } = require('./dbSequelize');
 
 var corsOptions = {
@@ -47,19 +46,6 @@ try {
 } catch (error) {
     console.error('Unable to connect to the database:', error);
 }
-
-try {
-    db.getConnection( ( err, connection ) => {
-        if (err) {
-            throw (err)
-        }
-        
-        console.log ("DB connected successful: " + connection.threadId)
-     })
-} catch (error) {
-    console.error('data base cant conect', error)
-}
-
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 

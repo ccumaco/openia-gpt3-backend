@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
-const { db } = require('../dbServer')
 const jwt = require('jsonwebtoken');
-const { getUserInfoFromDB, hashedPassword } = require('../utils');
+const { hashedPassword } = require('../utils');
 require("dotenv").config()
 const validator = require('validator');
 const nodemailer = require("nodemailer");
@@ -179,21 +178,30 @@ const verifyTokenEmail = async (req, res) => {
 
 const newPassword = async (req, res) => {
   const { newPassword, repeatPassword, token } = req.body;
-  console.log(newPassword, repeatPassword, 'token');
-  console.log(token, 'token');
-  if (newPassword != repeatPassword) return res.status(400).send({ message: "Las contraseñas no coinciden" })
-  if (newPassword.length < 5) return res.status(400).send({ message: "La contraseña tiene menos de 5 caracteres" })
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  const query = "UPDATE users SET userPassword = ? WHERE reset_token = ?";
+  if (newPassword !== repeatPassword) {
+    return res.status(400).send({ message: "Las contraseñas no coinciden" });
+  }
+  
+  if (newPassword.length < 5) {
+    return res.status(400).send({ message: "La contraseña tiene menos de 5 caracteres" });
+  }
+
+  
   try {
-    const results = await db.query(query, [hashedPassword, token])
-    res.status(200).send({
-      message: "La contraseña se a cambiado "
-    })
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const user = await User.findOne({ where: { reset_token: token } });
+  
+    if (!user) {
+      return res.status(404).send({ message: "Token de reinicio inválido" });
+    }
+  
+    await user.update({ userPassword: hashedPassword });
+    return res.status(200).send({ message: "La contraseña se ha cambiado" });
   } catch (error) {
     console.log(error, "algo fallo");
-    res.status(404).send("algo fallo")
+    return res.status(500).send({ message: "Algo falló al actualizar la contraseña" });
   }
+  
 }
 
 module.exports = {
