@@ -3,7 +3,7 @@ const successEmail = (resetToken, email) => {
     if (process.env.ENV == "dev") {
         urlSite = "http://localhost:5173/"
     } else {
-        urlSite = "https://incopy.netlify.app/"
+        urlSite = "https://arquitext.com.co/"
     }
     return `
         <p>Hola,</p>

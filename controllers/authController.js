@@ -142,7 +142,7 @@ const recoveryPassword = async (req, res) => {
       let objToRecoveryPassword = {
         from: 'Arquitext <recovery@arquitext.com>',
         to: email,
-        subject: "Recuperar Contraseña de tu cuenta Incopy",
+        subject: "Recuperar Contraseña de tu cuenta Arquitext",
         html: successEmail(resetToken, email),
       }
   
