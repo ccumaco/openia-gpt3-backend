@@ -88,13 +88,20 @@ const register = async (req, res) => {
   try {
     const password = await hashedPassword(userPassword);
     const newToken = jwt.sign({ userEmail }, process.env.JWT_SECRET);
-    const user = await User.create({
+    console.log(newToken, 'newTokennewTokennewTokennewToken');
+    await User.create({
       userName,
       userEmail,
       userPassword: password,
       userToken: newToken
     });
-    res.send({user, status: 200});
+    const user = {
+      userName,
+      userEmail,
+      userToken: newToken
+    }
+    console.log(user, '{user, status: 200}{user, status: 200}');
+    res.send(user);
   } catch (error) {
     res.status(404).send({ errors: error.errors, error });
   }
