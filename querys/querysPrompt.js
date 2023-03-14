@@ -52,8 +52,12 @@ const getMaxResponses = (maxResponses) => {
     }
     return maxResponses
 }
+
+const explainLike = (whatToDo) => {
+    return `${whatToDo} sobre este articulo,`
+}
 const getTitlePrompt = (title) => {
-    return `crea esto como un ${title};`
+    return `crea esto como un ${title}.`
 }
 const addImages = (flag) => {
     if (flag) {
@@ -70,5 +74,6 @@ module.exports = {
     generateSeoWods,
     generateLikeHTML,
     likeEmail,
-    addImages
+    addImages,
+    explainLike
 };

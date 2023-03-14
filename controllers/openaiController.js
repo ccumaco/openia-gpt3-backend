@@ -10,7 +10,8 @@ const {
 	generateSeoWods,
 	generateLikeHTML,
 	likeEmail,
-	addImages
+	addImages,
+	explainLike
 } = require('../querys/querysPrompt');
 
 const configuration = new Configuration({
@@ -65,11 +66,11 @@ const generateImage = async (req, res) => {
 	try {
 		const response = await openai.createImage({
 			prompt,
-			n: 1,
+			n: 5,
 			size: imageSize,
 		});
 
-		const imageUrl = response.data.data[0].url;
+		const imageUrl = response.data.data;
 
 		res.status(200).json({
 			success: true,
@@ -181,11 +182,44 @@ const generateArticle = async (req, res) => {
 		res.status(400).send('algo a fallado', error);
 	}
 };
+const generateResumes = async (req, res) => {
+	try {
+		
+		let {
+			prompt,
+			maxLength,
+			language,
+			soft,
+			whatToDo
+		} = req.body;
+		prompt = `
+		${explainLike(whatToDo)}
+        "${prompt}"
+        ${softMessaje(soft)}
+        ${getLenguaje(language)}
+        ${maxLengthText(maxLength)}
+		${generateLikeHTML()}
+      `;
+	  console.log(prompt);
+		const completion = await openai.createCompletion({
+			model: 'text-davinci-002',
+			prompt: prompt,
+			stream: false,
+			top_p: 1,
+			temperature: 0,
+			max_tokens: 2090,
+		});
+		res.status(200).send(completion.data.choices[0].text);
+	} catch (error) {
+		res.status(400).send('algo a fallado', error);
+	}
+};
 
 module.exports = {
 	generateImage,
 	generateText,
 	generateTextFree,
 	generateArticle,
-	generateLikeEmail
+	generateLikeEmail,
+	generateResumes
 };
