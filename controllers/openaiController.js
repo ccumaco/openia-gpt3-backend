@@ -202,7 +202,7 @@ const generateResumes = async (req, res) => {
       `;
 	  console.log(prompt);
 		const completion = await openai.createCompletion({
-			model: 'text-davinci-002',
+			model: 'text-davinci-003',
 			prompt: prompt,
 			stream: false,
 			top_p: 1,
