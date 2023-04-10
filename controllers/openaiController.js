@@ -1,5 +1,9 @@
 const { Configuration, OpenAIApi } = require('openai');
-require("dotenv").config()
+const fs = require('fs');
+const { Readable } = require('stream');
+const path = require('path');
+require("dotenv").config();
+const { exec } = require('child_process');
 const {
 	generateHastag,
 	softMessaje,
@@ -19,6 +23,17 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+const generateTextByAudio = async (req, res) => {
+	const filePath = path.join(__dirname, '..','audios', 'audio-test.mp3');
+	exec(`whisper './${filePath}' --model tiny --language Japanese --task translate`, (err, stdout, stderr) => {
+		if (err) {
+			console.log(err)
+		} else {
+			console.log(stdout)
+			console.log(stderr)
+		}
+	})
+};
 const generateText = async (req, res) => {
 	try {
 		let {
@@ -221,5 +236,6 @@ module.exports = {
 	generateTextFree,
 	generateArticle,
 	generateLikeEmail,
-	generateResumes
+	generateResumes,
+	generateTextByAudio
 };
