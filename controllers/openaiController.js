@@ -13,6 +13,7 @@ const {
 	addImages,
 	explainLike
 } = require('../querys/querysPrompt');
+const User = require('../Models/Users');
 
 const configuration = new Configuration({
 	apiKey: process.env.OPENAI_API_KEY,
@@ -94,21 +95,19 @@ const generateTextFree = async (req, res) => {
 	try {
 		let {
 			prompt,
-			language,
 			soft,
-			titlePrompt
+			context
 		} = req.body;
 		prompt = `
         ${prompt}
-		${getTitlePrompt(titlePrompt)}
         ${softMessaje(soft)}
-        ${getLenguaje(language)}
-		${generateLikeHTML()}
       `;
 	  console.log(prompt);
+	  const contextJoin = context.join("\n");
+	  console.log(contextJoin, 'contextJoin');
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
-			prompt: prompt,
+			prompt: contextJoin + prompt,
 			stream: false,
 			top_p: 1,
 			temperature: 1,
@@ -116,6 +115,7 @@ const generateTextFree = async (req, res) => {
 		});
 		res.status(200).send(completion.data.choices[0].text);
 	} catch (error) {
+		console.log(error.message);
 		res.status(400).send('algo a fallado');
 	}
 };
@@ -214,6 +214,20 @@ const generateResumes = async (req, res) => {
 		res.status(400).send('algo a fallado', error);
 	}
 };
+const transcriptAudio = async (req, res) => {
+	try {
+		let {
+			name,
+			blobAudio,
+			userEmail
+		} = req.body;
+		const user = await User.findOne({ where: { userEmail: userEmail } })
+		console.log(user);
+		console.log(blobAudio);
+	} catch (error) {
+		console.log(error);
+	}
+}
 
 module.exports = {
 	generateImage,
@@ -221,5 +235,6 @@ module.exports = {
 	generateTextFree,
 	generateArticle,
 	generateLikeEmail,
-	generateResumes
+	generateResumes,
+	transcriptAudio
 };

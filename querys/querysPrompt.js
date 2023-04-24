@@ -39,8 +39,10 @@ const maxLengthText = (maxLength) => {
 }
 
 const softMessaje = (soft) => {
-    if (soft) {
+    if (soft.length > 1) {
         return ` con un tono ${soft};`
+    } else {
+        return ``;
     }
 }
 

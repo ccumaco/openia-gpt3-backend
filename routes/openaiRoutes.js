@@ -6,7 +6,8 @@ const {
     generateTextFree,
     generateArticle,
     generateLikeEmail,
-    generateResumes
+    generateResumes,
+    transcriptAudio
 } = require('../controllers/openaiController');
 const router = express.Router();
 
@@ -18,5 +19,5 @@ router.post('/generate-text-free', generateTextFree);
 router.post('/generate-article', generateArticle);
 router.post('/generate-email', generateLikeEmail);
 router.post('/generate-resumes', generateResumes);
-
+router.post('/transcript-audio', transcriptAudio)
 module.exports = router;
