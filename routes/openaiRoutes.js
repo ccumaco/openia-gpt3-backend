@@ -1,5 +1,7 @@
 const express = require('express');
 const { verifyToken } = require('../controllers/authController');
+const multer = require('multer');
+const upload = multer();
 const {
     generateImage,
     generateText,
@@ -19,5 +21,5 @@ router.post('/generate-text-free', generateTextFree);
 router.post('/generate-article', generateArticle);
 router.post('/generate-email', generateLikeEmail);
 router.post('/generate-resumes', generateResumes);
-router.post('/transcript-audio', transcriptAudio)
+router.post('/transcript-audio', upload.single('file'), transcriptAudio)
 module.exports = router;

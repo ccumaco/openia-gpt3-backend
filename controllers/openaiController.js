@@ -14,6 +14,12 @@ const {
 	explainLike
 } = require('../querys/querysPrompt');
 const User = require('../Models/Users');
+const multer = require('multer');
+const FormData = require('form-data');
+const axios = require('axios');
+const fs = require('fs');
+const { Readable } = require('stream');
+
 
 const configuration = new Configuration({
 	apiKey: process.env.OPENAI_API_KEY,
@@ -102,9 +108,9 @@ const generateTextFree = async (req, res) => {
         ${prompt}
         ${softMessaje(soft)}
       `;
-	  console.log(prompt);
-	  const contextJoin = context.join("\n");
-	  console.log(contextJoin, 'contextJoin');
+		console.log(prompt);
+		const contextJoin = context.join("\n");
+		console.log(contextJoin, 'contextJoin');
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: contextJoin + prompt,
@@ -168,7 +174,7 @@ const generateArticle = async (req, res) => {
 		${addImages(generateImages)}
 		${generateLikeHTML()}
       `;
-	  console.log(prompt);
+		console.log(prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,
@@ -184,7 +190,7 @@ const generateArticle = async (req, res) => {
 };
 const generateResumes = async (req, res) => {
 	try {
-		
+
 		let {
 			prompt,
 			maxLength,
@@ -200,7 +206,7 @@ const generateResumes = async (req, res) => {
         ${maxLengthText(maxLength)}
 		${generateLikeHTML()}
       `;
-	  console.log(prompt);
+		console.log(prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,
@@ -214,20 +220,58 @@ const generateResumes = async (req, res) => {
 		res.status(400).send('algo a fallado', error);
 	}
 };
+
+// Configurar multer para que guarde el archivo en el disco
+const storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, './uploads');
+	},
+	filename: function (req, file, cb) {
+		cb(null, file.fieldname + '-' + Date.now())
+	}
+})
+const upload = multer({ storage: storage })
+
 const transcriptAudio = async (req, res) => {
 	try {
-		let {
-			name,
-			blobAudio,
-			userEmail
-		} = req.body;
-		const user = await User.findOne({ where: { userEmail: userEmail } })
-		console.log(user);
-		console.log(blobAudio);
+		const blobAudio = req.file.buffer;
+		// Convertir blob a buffer
+		const audio = Buffer.from(blobAudio);
+
+		// Guardar archivo en formato mp3
+		fs.writeFileSync('audio.mp3', audio);
+
+		// Crear instancia de FormData
+		const formData = new FormData();
+		formData.append('file', Readable.from(audio), {
+		  filename: 'audio.mp3',
+		  contentType: 'audio/mpeg',
+		});
+		formData.append('model', 'whisper-1');
+		
+		const headers = {
+		  Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+		  ...formData.getHeaders(),
+		  'Content-Type': 'multipart/form-data' // Agregar Content-Type
+		};
+		
+		const response = await axios.post(
+		  'https://api.openai.com/v1/audio/transcriptions',
+		  formData,
+		  {
+			headers: headers
+		  }
+		);
+
+		console.log(response);
+		res.status(200).send({data: response.data.text});
 	} catch (error) {
 		console.log(error);
+		res.status(400).send(error);
 	}
-}
+};
+
+
 
 module.exports = {
 	generateImage,
