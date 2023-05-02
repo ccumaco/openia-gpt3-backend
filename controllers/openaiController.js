@@ -45,7 +45,7 @@ const generateText = async (req, res) => {
         ${getLenguaje(language)}
         ${maxLengthText(maxLength)}
         ${generateHastag(automaticHastag, hashtag, countHashtag)}
-		${generateLikeHTML()}
+		
       `;
 		const allResponses = [];
 		for (let i = 0; i < getMaxResponses(maxResponses); i++) {
@@ -139,7 +139,7 @@ const generateLikeEmail = async (req, res) => {
 		${getTitlePrompt(titlePrompt)}
         ${softMessaje(soft)}
         ${getLenguaje(language)}
-		${generateLikeHTML()}
+		
       `;
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
@@ -172,7 +172,7 @@ const generateArticle = async (req, res) => {
         ${maxLengthText(maxLength)}
         ${generateSeoWods(generateSeoKeyWords, keyWords)}
 		${addImages(generateImages)}
-		${generateLikeHTML()}
+		
       `;
 		console.log(prompt);
 		const completion = await openai.createCompletion({
@@ -204,7 +204,7 @@ const generateResumes = async (req, res) => {
         ${softMessaje(soft)}
         ${getLenguaje(language)}
         ${maxLengthText(maxLength)}
-		${generateLikeHTML()}
+		
       `;
 		console.log(prompt);
 		const completion = await openai.createCompletion({
@@ -262,8 +262,6 @@ const transcriptAudio = async (req, res) => {
 			headers: headers
 		  }
 		);
-
-		console.log(response);
 		res.status(200).send({data: response.data.text});
 	} catch (error) {
 		console.log(error);
