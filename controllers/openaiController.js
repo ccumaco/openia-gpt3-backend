@@ -48,16 +48,19 @@ const generateText = async (req, res) => {
 		
       `;
 		const allResponses = [];
+		const completion = await openai.createCompletion({
+			model: 'text-davinci-003',
+			prompt: prompt,
+			stream: false,
+			top_p: 1,
+			temperature: 1,
+			max_tokens: 2000,
+			n: getMaxResponses(maxResponses)
+		});
+		console.log('mi propt al generar post', prompt);
 		for (let i = 0; i < getMaxResponses(maxResponses); i++) {
-			const completion = await openai.createCompletion({
-				model: 'text-davinci-003',
-				prompt: prompt,
-				stream: false,
-				top_p: 1,
-				temperature: 1,
-				max_tokens: 2000,
-			});
-			allResponses.push(completion.data.choices[0].text);
+			const response = completion.data.choices[i];
+			allResponses.push(response.text);
 		}
 		res.status(200).send(allResponses);
 	} catch (error) {
@@ -104,21 +107,19 @@ const generateTextFree = async (req, res) => {
 			soft,
 			context
 		} = req.body;
+		const baseQuestion = 'para responder siempre hazlo de forma amable, eres alegre, siempre servicial, me explicas todo al detalle, argumentas tus respuestas y me aconsejas si lo necesito.'
 		prompt = `
-        ${prompt}
-        ${softMessaje(soft)}
-      `;
-		console.log(prompt);
+			${prompt}
+		`;
 		const contextJoin = context.join("\n");
-		console.log(contextJoin, 'contextJoin');
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
-			prompt: contextJoin + prompt,
+			prompt: contextJoin + baseQuestion + prompt,
 			stream: false,
-			top_p: 1,
-			temperature: 1,
+			temperature: softMessaje(soft),
 			max_tokens: 2000,
 		});
+		console.log('mi propt al generar free style', prompt);
 		res.status(200).send(completion.data.choices[0].text);
 	} catch (error) {
 		console.log(error.message);
@@ -141,6 +142,7 @@ const generateLikeEmail = async (req, res) => {
         ${getLenguaje(language)}
 		
       `;
+	  console.log('mi propt al generar email', prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,
@@ -174,7 +176,7 @@ const generateArticle = async (req, res) => {
 		${addImages(generateImages)}
 		
       `;
-		console.log(prompt);
+		console.log('mi propt al generar articulos', prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,
@@ -206,7 +208,7 @@ const generateResumes = async (req, res) => {
         ${maxLengthText(maxLength)}
 		
       `;
-		console.log(prompt);
+	  console.log('mi propt al generar resumenes', prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,
