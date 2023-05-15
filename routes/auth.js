@@ -9,8 +9,8 @@ router.post('/login', login);
 router.post('/register', register);
 router.post('/logout', logout);
 router.post('/verify-token', verifyToken);
-router.post('/recovery-password', limiter(2), recoveryPassword);
-router.post('/validate-email-token', limiter(5), verifyTokenEmail);
-router.post('/new-password', limiter(5), newPassword);
+router.post('/recovery-password', recoveryPassword);
+router.post('/validate-email-token', verifyTokenEmail);
+router.post('/new-password', newPassword);
 
 module.exports = router;
