@@ -1,15 +1,15 @@
 
-const generateHastag = (generateHastag = false, hastags, countHashtag) => {
-    if (generateHastag && hastags.length == 0) {
+const generateHashtag = (generateHashtag = false, hastags, countHashtag) => {
+    if (generateHashtag && hastags.length == 0) {
         return `y genera ${countHashtag} hashtags apropiados para el tema`
-    } else if (generateHastag && hastags.length > 0) {
+    } else if (generateHashtag && hastags.length > 0) {
         return `y genera ${countHashtag} hashtags apropiados para el tema`
-    } else if(!generateHastag && hastags.length > 0){
+    } else if(!generateHashtag && hastags.length > 0){
         return `y agrega estos hashtag ${hastags} al final`
     }
     return ''
 }
-const generateSeoWods = (generateSeoKeyWords = false, keyWords) => {
+const generateSeoWords = (generateSeoKeyWords = false, keyWords) => {
     if (generateSeoKeyWords && keyWords.length == 0) {
         return `utiliza las palabras de SEO mas apropiadas para el articulo`
     } else if (generateSeoKeyWords && keyWords.length > 0) {
@@ -25,7 +25,7 @@ const generateLikeHTML = () => {
 const likeEmail = () => {
     return 'esto es un correo';
 }
-const getLenguaje = (language) => {
+const getLanguage = (language) => {
     if (language) {
         return `esta respuesta la quiero en ${language};`
     }
@@ -38,7 +38,7 @@ const maxLengthText = (maxLength) => {
     return ''
 }
 
-const softMessaje = (soft) => {
+const softMessage = (soft) => {
     switch (soft) {
         case 'Creativa':
             return 1
@@ -72,13 +72,13 @@ const addImages = (flag) => {
     }
 }
 module.exports = {
-    generateHastag,
-    getLenguaje,
-    softMessaje,
+    generateHashtag,
+    getLanguage,
+    softMessage,
     maxLengthText,
     getMaxResponses,
     getTitlePrompt,
-    generateSeoWods,
+    generateSeoWords,
     generateLikeHTML,
     likeEmail,
     addImages,

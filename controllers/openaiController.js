@@ -1,13 +1,13 @@
 const { Configuration, OpenAIApi } = require('openai');
 require("dotenv").config()
 const {
-	generateHastag,
-	softMessaje,
-	getLenguaje,
+	generateHashtag,
+	softMessage,
+	getLanguage,
 	maxLengthText,
 	getTitlePrompt,
 	getMaxResponses,
-	generateSeoWods,
+	generateSeoWords,
 	generateLikeHTML,
 	likeEmail,
 	addImages,
@@ -41,10 +41,10 @@ const generateText = async (req, res) => {
 		} = req.body;
 		prompt = `
         ${prompt}
-        ${softMessaje(soft)}
-        ${getLenguaje(language)}
+        ${softMessage(soft)}
+        ${getLanguage(language)}
         ${maxLengthText(maxLength)}
-        ${generateHastag(automaticHastag, hashtag, countHashtag)}
+        ${generateHashtag(automaticHastag, hashtag, countHashtag)}
 		
       `;
 		const allResponses = [];
@@ -116,7 +116,7 @@ const generateTextFree = async (req, res) => {
 			model: 'text-davinci-003',
 			prompt: contextJoin + baseQuestion + prompt,
 			stream: false,
-			temperature: softMessaje(soft),
+			temperature: softMessage(soft),
 			max_tokens: 2000,
 		});
 		console.log('mi propt al generar free style', prompt);
@@ -138,8 +138,8 @@ const generateLikeEmail = async (req, res) => {
 		${likeEmail()}
         ${prompt}
 		${getTitlePrompt(titlePrompt)}
-        ${softMessaje(soft)}
-        ${getLenguaje(language)}
+        ${softMessage(soft)}
+        ${getLanguage(language)}
 		
       `;
 	  console.log('mi propt al generar email', prompt);
@@ -169,10 +169,10 @@ const generateArticle = async (req, res) => {
 		} = req.body;
 		prompt = `
         ${prompt}
-        ${softMessaje(soft)}
-        ${getLenguaje(language)}
+        ${softMessage(soft)}
+        ${getLanguage(language)}
         ${maxLengthText(maxLength)}
-        ${generateSeoWods(generateSeoKeyWords, keyWords)}
+        ${generateSeoWords(generateSeoKeyWords, keyWords)}
 		${addImages(generateImages)}
 		
       `;
@@ -203,8 +203,8 @@ const generateResumes = async (req, res) => {
 		prompt = `
 		${explainLike(whatToDo)}
         "${prompt}"
-        ${softMessaje(soft)}
-        ${getLenguaje(language)}
+        ${softMessage(soft)}
+        ${getLanguage(language)}
         ${maxLengthText(maxLength)}
 		
       `;
