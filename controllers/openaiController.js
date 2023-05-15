@@ -107,18 +107,19 @@ const generateTextFree = async (req, res) => {
 			soft,
 			context
 		} = req.body;
-		const baseQuestion = 'para responder siempre hazlo de forma amable, eres alegre, siempre servicial, me explicas todo al detalle, argumentas tus respuestas y me aconsejas si lo necesito.'
+		const baseQuestion = 'Tu objetivo es ser lo más útil y efectivo posible. Maneja un tono de voz adaptable, explica y argumenta tu respuesta en caso de ser necesario.'
 		prompt = `
 			${prompt}
 		`;
 		const contextJoin = context.join("\n");
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
-			prompt: contextJoin + baseQuestion + prompt,
+			prompt: baseQuestion + contextJoin + prompt,
 			stream: false,
 			temperature: softMessage(soft),
 			max_tokens: 2000,
 		});
+		console.log(baseQuestion + contextJoin + prompt)
 		console.log('mi propt al generar free style', prompt);
 		res.status(200).send(completion.data.choices[0].text);
 	} catch (error) {
