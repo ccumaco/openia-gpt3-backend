@@ -100,31 +100,51 @@ const generateImage = async (req, res) => {
 		});
 	}
 };
+
+
 const generateTextFree = async (req, res) => {
 	try {
-		let {
-			prompt,
-			soft,
-			context
-		} = req.body;
-		const baseQuestion = 'Tu objetivo es ser lo más útil y efectivo posible. Maneja un tono de voz adaptable, explica y argumenta tu respuesta en caso de ser necesario.'
-		prompt = `
-			${prompt}
-		`;
-		const contextJoin = context.join("\n");
-		const completion = await openai.createCompletion({
-			model: 'text-davinci-003',
-			prompt: baseQuestion + contextJoin + prompt,
-			stream: false,
-			temperature: softMessage(soft),
-			max_tokens: 2000,
+		res.setHeader('Content-Type', 'text/event-stream');
+		res.setHeader('Cache-Control', 'no-cache');
+		res.setHeader('Connection', 'keep-alive');
+		res.flushHeaders();
+		const completion = openai.createCompletion({
+		  model: "text-davinci-003",
+		  prompt: "dime un 4 párrafos",
+		  max_tokens: 4000,
+		  temperature: 0,
+		  stream: true,
+		}, { responseType: 'stream' });
+		
+		completion.then(resp => {
+		  resp.data.on('data', data => {
+			const lines = data.toString().split('\n').filter(line => line.trim() !== '');
+			for (const line of lines) {
+			  const message = line.replace(/^data: /, '');
+			  if (message === '[DONE]') {
+				res.end();
+				return;
+			  }
+			  const parsed = JSON.parse(message);
+			  res.write(`${parsed.choices[0].text}`);
+			}
+		  });
 		});
-		console.log(baseQuestion + contextJoin + prompt)
-		console.log('mi propt al generar free style', prompt);
-		res.status(200).send(completion.data.choices[0].text);
 	} catch (error) {
-		console.log(error.message);
-		res.status(400).send('algo a fallado');
+		if (error.response?.status) {
+			console.error(error.response.status, error.message);
+			error.response.data.on('data', data => {
+				const message = data.toString();
+				try {
+					const parsed = JSON.parse(message);
+					console.error('An error occurred during OpenAI request: ', parsed);
+				} catch(error) {
+					console.error('An error occurred during OpenAI request: ', message);
+				}
+			});
+		} else {
+			console.error('An error occurred during OpenAI request', error);
+		}
 	}
 };
 const generateLikeEmail = async (req, res) => {
