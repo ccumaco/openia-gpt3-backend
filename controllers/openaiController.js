@@ -146,7 +146,7 @@ const generateTextFree = async (req, res) => {
 		res.flushHeaders();
 		const completion = openai.createChatCompletion({
 			model: "gpt-3.5-turbo",
-			messages: context.slice(-5),
+			messages: context.slice(-4),
 		  	max_tokens: 4000,
 		  	temperature: 0,
 		  	stream: true,
