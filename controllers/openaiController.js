@@ -145,8 +145,8 @@ const generateTextFree = async (req, res) => {
 		res.setHeader('Connection', 'keep-alive');
 		res.flushHeaders();
 		const completion = openai.createChatCompletion({
-			"model": "gpt-3.5-turbo",
-			"messages": context,
+			model: "gpt-3.5-turbo",
+			messages: context.slice(-5),
 		  	max_tokens: 4000,
 		  	temperature: 0,
 		  	stream: true,
@@ -158,7 +158,6 @@ const generateTextFree = async (req, res) => {
 				miInfo: transformData(data.toString())
 			});
 			if (transformData(data.toString())[0]) {
-				console.log(data.toString(), 'data.toString()');
 				res.write(transformData(data.toString())[0])
 			} else {
 				console.log('aqui fallo');
@@ -174,13 +173,13 @@ const generateTextFree = async (req, res) => {
 				const message = data.toString();
 				try {
 					const parsed = JSON.parse(message);
-					console.error('An error occurred during OpenAI request: ', parsed);
+					console.error('An error occurred during OpenAI request: ');
 				} catch(error) {
-					console.error('An error occurred during OpenAI request: ', message);
+					console.error('An error occurred during OpenAI request: ');
 				}
 			});
 		} else {
-			console.error('An error occurred during OpenAI request', error);
+			console.error('An error occurred during OpenAI request');
 		}
 	}
 };
