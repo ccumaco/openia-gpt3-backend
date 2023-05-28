@@ -139,14 +139,15 @@ function transformData(dataString) {
 
 const generateTextFree = async (req, res) => {
 	try {
-		const { context } = req.body;
+		let { context } = req.body;
 		res.setHeader('Content-Type', 'text/event-stream');
 		res.setHeader('Cache-Control', 'no-cache');
 		res.setHeader('Connection', 'keep-alive');
 		res.flushHeaders();
+		context = context.slice(-4)
 		const completion = openai.createChatCompletion({
 			model: "gpt-3.5-turbo",
-			messages: context.slice(-4),
+			messages: context,
 		  	max_tokens: 4000,
 		  	temperature: 0,
 		  	stream: true,
@@ -167,6 +168,7 @@ const generateTextFree = async (req, res) => {
 		  });
 		});
 	} catch (error) {
+		console.log(context.slice(-4), 'context.slice(-4) context.slice(-4)');
 		if (error.response?.status) {
 			console.error(error.response.status, error.message);
 			error.response.data.on('data', data => {
