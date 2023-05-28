@@ -101,32 +101,69 @@ const generateImage = async (req, res) => {
 	}
 };
 
+function transformData(dataString) {
+	if (dataString === "data: [DONE]") return [];
+	const dataArray = dataString.split('\n');
+	const dataObjects = dataArray.map((dataItem) => {
+	  const jsonStartIndex = dataItem.indexOf('{');
+	  if (jsonStartIndex !== -1) {
+		const jsonString = dataItem.substring(jsonStartIndex);
+		try {
+		  const decodedString = decodeURIComponent(jsonString);
+		  return JSON.parse(decodedString);
+		} catch (error) {
+		  console.error('Error parsing JSON:', error);
+		  return null;
+		}
+	  } else {
+		return null;
+	  }
+	});
+  
+	const contentArray = dataObjects.map((dataObj) => {
+	  if (dataObj && dataObj.choices && dataObj.choices.length > 0) {
+		return dataObj.choices[0].delta.content;
+	  } else {
+		return null;
+	  }
+	});
+  
+	const filteredContentArray = contentArray.filter((content) => {
+	  return content !== undefined && content !== null;
+	});
+  
+	return filteredContentArray;
+  }
+  
+
 
 const generateTextFree = async (req, res) => {
 	try {
+		const { context } = req.body;
 		res.setHeader('Content-Type', 'text/event-stream');
 		res.setHeader('Cache-Control', 'no-cache');
 		res.setHeader('Connection', 'keep-alive');
 		res.flushHeaders();
-		const completion = openai.createCompletion({
-		  model: "text-davinci-003",
-		  prompt: "dime un 4 párrafos",
-		  max_tokens: 4000,
-		  temperature: 0,
-		  stream: true,
+		const completion = openai.createChatCompletion({
+			"model": "gpt-3.5-turbo",
+			"messages": context,
+		  	max_tokens: 4000,
+		  	temperature: 0,
+		  	stream: true,
 		}, { responseType: 'stream' });
 		
 		completion.then(resp => {
 		  resp.data.on('data', data => {
-			const lines = data.toString().split('\n').filter(line => line.trim() !== '');
-			for (const line of lines) {
-			  const message = line.replace(/^data: /, '');
-			  if (message === '[DONE]') {
+			console.log({
+				miInfo: transformData(data.toString())
+			});
+			if (transformData(data.toString())[0]) {
+				console.log(data.toString(), 'data.toString()');
+				res.write(transformData(data.toString())[0])
+			} else {
+				console.log('aqui fallo');
 				res.end();
 				return;
-			  }
-			  const parsed = JSON.parse(message);
-			  res.write(`${parsed.choices[0].text}`);
 			}
 		  });
 		});
