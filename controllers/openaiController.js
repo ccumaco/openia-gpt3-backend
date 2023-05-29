@@ -137,54 +137,49 @@ function transformData(dataString) {
   
 
 
-const generateTextFree = async (req, res) => {
+  const generateTextFree = async (req, res) => {
 	try {
-		let { context } = req.body;
-		res.setHeader('Content-Type', 'text/event-stream');
-		res.setHeader('Cache-Control', 'no-cache');
-		res.setHeader('Connection', 'keep-alive');
-		res.flushHeaders();
-		context = context.slice(-4)
-		const completion = openai.createChatCompletion({
-			model: "gpt-3.5-turbo",
-			messages: context,
-		  	max_tokens: 4000,
-		  	temperature: 0,
-		  	stream: true,
-		}, { responseType: 'stream' });
-		
-		completion.then(resp => {
-		  resp.data.on('data', data => {
-			console.log({
-				miInfo: transformData(data.toString())
-			});
-			if (transformData(data.toString())[0]) {
-				res.write(transformData(data.toString())[0])
-			} else {
-				console.log('aqui fallo');
-				res.end();
-				return;
-			}
+	  const { context } = req.body;
+	  const completion = openai.createChatCompletion({
+		model: "gpt-3.5-turbo",
+		messages: context,
+		stream: true,
+	  }, { responseType: 'stream' });
+  
+	  completion.then(resp => {
+		resp.data.on('data', data => {
+		  console.log({
+			miInfo: transformData(data.toString())
 		  });
+		  if (transformData(data.toString())[0]) {
+			res.write(transformData(data.toString())[0]);
+		  } else {
+			res.end();
+			return;
+		  }
 		});
+	  });
 	} catch (error) {
-		console.log(context.slice(-4), 'context.slice(-4) context.slice(-4)');
-		if (error.response?.status) {
-			console.error(error.response.status, error.message);
-			error.response.data.on('data', data => {
-				const message = data.toString();
-				try {
-					const parsed = JSON.parse(message);
-					console.error('An error occurred during OpenAI request: ');
-				} catch(error) {
-					console.error('An error occurred during OpenAI request: ');
-				}
-			});
-		} else {
-			console.error('An error occurred during OpenAI request');
-		}
+	  console.log(context.slice(-4), 'context.slice(-4) context.slice(-4)');
+	  if (error.response?.status) {
+		console.error(error.response.status, error.message);
+		error.response.data.on('data', data => {
+		  const message = data.toString();
+		  try {
+			const parsed = JSON.parse(message);
+			console.error('An error occurred during OpenAI request: ', parsed);
+			res.status(error.response.status).send(parsed);
+		  } catch (error) {
+			console.error('An error occurred during OpenAI request: ', message);
+			res.status(error.response.status).send(message);
+		  }
+		});
+	  } else {
+		console.error('An error occurred during OpenAI request', error);
+		res.status(500).send('Internal Server Error');
+	  }
 	}
-};
+  };
 const generateLikeEmail = async (req, res) => {
 	try {
 		let {
