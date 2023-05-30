@@ -130,7 +130,7 @@ function transformData(dataString) {
 		  return decodeURIComponent(content);
 		} catch (error) {
 		  console.error('Error decoding content:', error);
-		  return content; // Mantenemos el contenido sin decodificar en caso de error
+		  return content;
 		}
 	  });
   
@@ -151,18 +151,22 @@ function transformData(dataString) {
 		stream: true,
 		n: 1
 	  }, { responseType: 'stream' });
-  
+	  let finalString = ''
 	  completion.then(resp => {
 		resp.data.on('data', data => {
 		  const transformedData = transformData(data.toString());
-		  console.log({ miInfo: transformedData });
 		  if (transformedData[0]) {
+			finalString += transformedData[0]
 			res.write(transformedData[0]);
 		  }
 		});
   
 		resp.data.on('end', () => {
-		  res.end(); // Finalizar la respuesta cuando se ha completado el flujo de datos
+			console.log({
+				context,
+				finalString
+			});
+		  res.end();
 		});
 	  });
 	} catch (error) {
