@@ -102,40 +102,45 @@ const generateImage = async (req, res) => {
 };
 
 function transformData(dataString) {
-	if (dataString === "data: [DONE]") return [];
+	if (dataString === "data: [DONE]") {
+	  return [];
+	}
+  
 	const dataArray = dataString.split('\n');
-	const dataObjects = dataArray.map((dataItem) => {
-	  const jsonStartIndex = dataItem.indexOf('{');
-	  if (jsonStartIndex !== -1) {
-		const jsonString = dataItem.substring(jsonStartIndex);
-		try {
-		  const decodedString = decodeURIComponent(jsonString);
-		  return JSON.parse(decodedString);
-		} catch (error) {
-		  console.error('Error parsing JSON:', error);
-		  return null;
+  
+	const filteredContentArray = dataArray
+	  .map((dataItem) => {
+		const jsonStartIndex = dataItem.indexOf('{');
+		if (jsonStartIndex !== -1) {
+		  const jsonString = dataItem.substring(jsonStartIndex);
+		  try {
+			const parsedJson = JSON.parse(jsonString);
+			return parsedJson;
+		  } catch (error) {
+			console.error('Error parsing JSON:', error);
+		  }
 		}
-	  } else {
 		return null;
-	  }
-	});
+	  })
+	  .filter((dataObj) => dataObj && dataObj.choices && dataObj.choices.length > 0)
+	  .map((dataObj) => dataObj.choices[0].delta.content)
+	  .filter((content) => content !== undefined && content !== null)
+	  .map((content) => {
+		try {
+		  return decodeURIComponent(content);
+		} catch (error) {
+		  console.error('Error decoding content:', error);
+		  return content; // Mantenemos el contenido sin decodificar en caso de error
+		}
+	  });
   
-	const contentArray = dataObjects.map((dataObj) => {
-	  if (dataObj && dataObj.choices && dataObj.choices.length > 0) {
-		return dataObj.choices[0].delta.content;
-	  } else {
-		return null;
-	  }
-	});
-  
-	const filteredContentArray = contentArray.filter((content) => {
-	  return content !== undefined && content !== null;
-	});
+	if (filteredContentArray.length > 0) {
+	  filteredContentArray.push("%");
+	}
   
 	return filteredContentArray;
   }
   
-
 
   const generateTextFree = async (req, res) => {
 	try {
@@ -144,19 +149,20 @@ function transformData(dataString) {
 		model: "gpt-3.5-turbo",
 		messages: context,
 		stream: true,
+		n: 1
 	  }, { responseType: 'stream' });
   
 	  completion.then(resp => {
 		resp.data.on('data', data => {
-		  console.log({
-			miInfo: transformData(data.toString())
-		  });
-		  if (transformData(data.toString())[0]) {
-			res.write(transformData(data.toString())[0]);
-		  } else {
-			res.end();
-			return;
+		  const transformedData = transformData(data.toString());
+		  console.log({ miInfo: transformedData });
+		  if (transformedData[0]) {
+			res.write(transformedData[0]);
 		  }
+		});
+  
+		resp.data.on('end', () => {
+		  res.end(); // Finalizar la respuesta cuando se ha completado el flujo de datos
 		});
 	  });
 	} catch (error) {
@@ -180,7 +186,7 @@ function transformData(dataString) {
 	  }
 	}
   };
-const generateLikeEmail = async (req, res) => {
+  const generateLikeEmail = async (req, res) => {
 	try {
 		let {
 			titlePrompt,
