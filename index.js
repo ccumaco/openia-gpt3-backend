@@ -9,7 +9,7 @@ const mysql = require("mysql")
 const app = express();
 const morgan = require('morgan')
 const cors = require('cors')
-const { database } = require('./dbSequelize');
+// const { database } = require('./dbSequelize');
 
 var corsOptions = {
 	origin: ['https://incopy.netlify.app', 'https://openia-frontend.vercel.app', 'http://127.0.0.1:5173', 'http://localhost:5173', 'https://arquitext.com.co'],
@@ -36,16 +36,16 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-try {
-    (async () => {
-        await database.authenticate();
-        await database.sync({ logging: false });
-        // Code here
-        console.log('Connection has been established successfully.');
-      })();
-} catch (error) {
-    console.error('Unable to connect to the database:', error);
-}
+// try {
+//     (async () => {
+//         await database.authenticate();
+//         await database.sync({ logging: false });
+//         // Code here
+//         console.log('Connection has been established successfully.');
+//       })();
+// } catch (error) {
+//     console.error('Unable to connect to the database:', error);
+// }
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
