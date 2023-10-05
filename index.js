@@ -12,7 +12,7 @@ const cors = require('cors')
 // const { database } = require('./dbSequelize');
 
 var corsOptions = {
-	origin: ['https://incopy.netlify.app', 'https://openia-frontend.vercel.app', 'http://127.0.0.1:5173', 'http://localhost:5173', 'https://arquitext.com.co', 'https://talksmart.netlify.app/'],
+	origin: ['https://incopy.netlify.app', 'https://openia-frontend.vercel.app', 'http://127.0.0.1:5173', 'http://localhost:5173', 'https://arquitext.com.co', 'https://talksmart.netlify.app'],
 	optionsSuccessStatus: 200 // For legacy browser support
 }
 app.use(cors(corsOptions))
