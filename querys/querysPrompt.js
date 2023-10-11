@@ -71,6 +71,15 @@ const addImages = (flag) => {
         return `agrega imagenes buscadas en web sobre el tema;`
     }
 }
+
+const validateIfIsQuery = (prompt) => {
+    const QUERY = 'SELECT * FROM productos WHERE id = "id proporcionado" OR nombre = "nombre proporcionado";';
+    const elseCondition = "sino no solo responde la pregunta amigablemente, recuerda que esto es solo contexto que te doy.";
+    const baseCondition =  `si este texto contiene preguntas relacionadas a productos dame un ejemplo de una consulta SQL con la siguiente base cambiando lo que en las comillas por el producto: `;
+    const response = ` (${baseCondition} ${QUERY} ${elseCondition}) `;
+    return response
+}
+
 module.exports = {
     generateHashtag,
     getLanguage,
@@ -82,5 +91,6 @@ module.exports = {
     generateLikeHTML,
     likeEmail,
     addImages,
-    explainLike
+    explainLike,
+    validateIfIsQuery
 };

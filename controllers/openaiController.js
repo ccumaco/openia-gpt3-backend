@@ -11,8 +11,10 @@ const {
 	generateLikeHTML,
 	likeEmail,
 	addImages,
-	explainLike
+	explainLike,
+	validateIfIsQuery
 } = require('../querys/querysPrompt');
+const { clearPromptSql } = require('../querys/sqlPrompts');
 const User = require('../Models/Users');
 const multer = require('multer');
 const FormData = require('form-data');
@@ -145,53 +147,43 @@ function transformData(dataString) {
   const generateTextFree = async (req, res) => {
 	try {
 	  const { context } = req.body;
+	  context[context.length - 1].content = validateIfIsQuery(context[context.length - 1].content) + context[context.length - 1].content;
 	  const completion = openai.createChatCompletion({
 		model: "gpt-3.5-turbo",
 		messages: context,
 		stream: true,
 		n: 1
 	  }, { responseType: 'stream' });
-	  let finalString = ''
+  
+	  let finalString = '';
+  
 	  completion.then(resp => {
 		resp.data.on('data', data => {
 		  const transformedData = transformData(data.toString());
 		  if (transformedData[0]) {
-			finalString += transformedData[0]
+			finalString += transformedData[0];
 			res.write(transformedData[0]);
 		  }
 		});
   
 		resp.data.on('end', () => {
-			console.log({
-				context,
-				finalString
-			});
+		  console.log({
+			context,
+			finalString
+		  });
+		  console.log(validateIfIsQuery(finalString), 'validateIfIsQuery(finalString)');
 		  res.end();
 		});
 	  });
 	} catch (error) {
-	  console.log(context.slice(-4), 'context.slice(-4) context.slice(-4)');
-	  if (error.response?.status) {
-		console.error(error.response.status, error.message);
-		error.response.data.on('data', data => {
-		  const message = data.toString();
-		  try {
-			const parsed = JSON.parse(message);
-			console.error('An error occurred during OpenAI request: ', parsed);
-			res.status(error.response.status).send(parsed);
-		  } catch (error) {
-			console.error('An error occurred during OpenAI request: ', message);
-			res.status(error.response.status).send(message);
-		  }
-		});
-	  } else {
-		console.error('An error occurred during OpenAI request', error);
-		res.status(500).send('Internal Server Error');
-	  }
+	  console.error('An error occurred:', error.message);
+  
+	  // Envía una respuesta de error al cliente
+	  res.status(500).send('Ha ocurrido un error en el servidor');
 	}
   };
   const generateLikeEmail = async (req, res) => {
-	try {
+	  try {
 		let {
 			titlePrompt,
 			prompt,
