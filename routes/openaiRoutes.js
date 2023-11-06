@@ -20,5 +20,5 @@ router.post('/generate-text-free', generateTextFree);
 router.post('/generate-article', generateArticle);
 router.post('/generate-email', generateLikeEmail);
 router.post('/generate-resumes', generateResumes);
-router.post('/transcript-audio', upload.single('file'), transcriptAudio)
+// router.post('/transcript-audio', upload.single('file'), transcriptAudio)
 module.exports = router;
