@@ -147,7 +147,7 @@ function transformData(dataString) {
 const generateTextFree = async (req, res) => {
 	try {
 		const { context } = req.body;
-		context[context.length - 1].content = validateIfIsQuery(context[context.length - 1].content) + context[context.length - 1].content;
+		// context[context.length - 1].content = validateIfIsQuery(context[context.length - 1].content) + context[context.length - 1].content;
 		const completion = await openai.chat.completions.create({
 			model: "gpt-3.5-turbo",
 			n: 1,
