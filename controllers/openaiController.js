@@ -1,5 +1,5 @@
-const { Configuration, OpenAIApi } = require('openai');
 require("dotenv").config()
+const OpenAIApi = require('openai');
 const {
 	generateHashtag,
 	softMessage,
@@ -23,9 +23,9 @@ const fs = require('fs');
 const { Readable } = require('stream');
 
 
-const configuration = new Configuration({
+const configuration = {
 	apiKey: process.env.OPENAI_API_KEY,
-});
+};
 const openai = new OpenAIApi(configuration);
 
 const generateText = async (req, res) => {
@@ -105,85 +105,86 @@ const generateImage = async (req, res) => {
 
 function transformData(dataString) {
 	if (dataString === "data: [DONE]") {
-	  return [];
+		return [];
 	}
-  
-	const dataArray = dataString.split('\n');
-  
-	const filteredContentArray = dataArray
-	  .map((dataItem) => {
-		const jsonStartIndex = dataItem.indexOf('{');
-		if (jsonStartIndex !== -1) {
-		  const jsonString = dataItem.substring(jsonStartIndex);
-		  try {
-			const parsedJson = JSON.parse(jsonString);
-			return parsedJson;
-		  } catch (error) {
-			console.error('Error parsing JSON:', error);
-		  }
-		}
-		return null;
-	  })
-	  .filter((dataObj) => dataObj && dataObj.choices && dataObj.choices.length > 0)
-	  .map((dataObj) => dataObj.choices[0].delta.content)
-	  .filter((content) => content !== undefined && content !== null)
-	  .map((content) => {
-		try {
-		  return decodeURIComponent(content);
-		} catch (error) {
-		  console.error('Error decoding content:', error);
-		  return content;
-		}
-	  });
-  
-	if (filteredContentArray.length > 0) {
-	  filteredContentArray.push("%");
-	}
-  
-	return filteredContentArray;
-  }
-  
 
-  const generateTextFree = async (req, res) => {
-	try {
-	  const { context } = req.body;
-	  context[context.length - 1].content = validateIfIsQuery(context[context.length - 1].content) + context[context.length - 1].content;
-	  const completion = openai.createChatCompletion({
-		model: "gpt-3.5-turbo",
-		messages: context,
-		stream: true,
-		n: 1
-	  }, { responseType: 'stream' });
-  
-	  let finalString = '';
-  
-	  completion.then(resp => {
-		resp.data.on('data', data => {
-		  const transformedData = transformData(data.toString());
-		  if (transformedData[0]) {
-			finalString += transformedData[0];
-			res.write(transformedData[0]);
-		  }
+	const dataArray = dataString.split('\n');
+
+	const filteredContentArray = dataArray
+		.map((dataItem) => {
+			const jsonStartIndex = dataItem.indexOf('{');
+			if (jsonStartIndex !== -1) {
+				const jsonString = dataItem.substring(jsonStartIndex);
+				try {
+					const parsedJson = JSON.parse(jsonString);
+					return parsedJson;
+				} catch (error) {
+					console.error('Error parsing JSON:', error);
+				}
+			}
+			return null;
+		})
+		.filter((dataObj) => dataObj && dataObj.choices && dataObj.choices.length > 0)
+		.map((dataObj) => dataObj.choices[0].delta.content)
+		.filter((content) => content !== undefined && content !== null)
+		.map((content) => {
+			try {
+				return decodeURIComponent(content);
+			} catch (error) {
+				console.error('Error decoding content:', error);
+				return content;
+			}
 		});
-  
-		resp.data.on('end', () => {
-		  console.log({
-			context,
-			finalString
-		  });
-		  console.log(validateIfIsQuery(finalString), 'validateIfIsQuery(finalString)');
-		  res.end();
-		});
-	  });
-	} catch (error) {
-	  console.error('An error occurred:', error.message);
-  
-	  // Envía una respuesta de error al cliente
-	  res.status(500).send('Ha ocurrido un error en el servidor');
+
+	if (filteredContentArray.length > 0) {
+		filteredContentArray.push("%");
 	}
-  };
-  const generateLikeEmail = async (req, res) => {
-	  try {
+
+	return filteredContentArray;
+}
+
+
+const generateTextFree = async (req, res) => {
+	try {
+		const { context } = req.body;
+		context[context.length - 1].content = validateIfIsQuery(context[context.length - 1].content) + context[context.length - 1].content;
+		const completion = await openai.chat.completions.create({
+			model: "gpt-3.5-turbo",
+			n: 1,
+			messages: context,
+		});
+		const response = completion.choices[0].message.content;
+		res.status(200).send({
+			response
+		});
+		//this is if you want to use the stream
+		//   completion.then(resp => {
+		// 	resp.data.on('data', data => {
+		// 	  const transformedData = transformData(data.toString());
+		// 	  if (transformedData[0]) {
+		// 		finalString += transformedData[0];
+		// 		res.write(transformedData[0]);
+		// 	  }
+		// 	});
+
+		// 	resp.data.on('end', () => {
+		// 	  console.log({
+		// 		context,
+		// 		finalString
+		// 	  });
+		// 	  console.log(validateIfIsQuery(finalString), 'validateIfIsQuery(finalString)');
+		// 	  res.end();
+		// 	});
+		//   });
+	} catch (error) {
+		console.error('An error occurred:', error.message);
+
+		// Envía una respuesta de error al cliente
+		res.status(500).send('Ha ocurrido un error en el servidor');
+	}
+};
+const generateLikeEmail = async (req, res) => {
+	try {
 		let {
 			titlePrompt,
 			prompt,
@@ -198,7 +199,7 @@ function transformData(dataString) {
         ${getLanguage(language)}
 		
       `;
-	  console.log('mi propt al generar email', prompt);
+		console.log('mi propt al generar email', prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,
@@ -264,7 +265,7 @@ const generateResumes = async (req, res) => {
         ${maxLengthText(maxLength)}
 		
       `;
-	  console.log('mi propt al generar resumenes', prompt);
+		console.log('mi propt al generar resumenes', prompt);
 		const completion = await openai.createCompletion({
 			model: 'text-davinci-003',
 			prompt: prompt,
@@ -302,25 +303,25 @@ const transcriptAudio = async (req, res) => {
 		// Crear instancia de FormData
 		const formData = new FormData();
 		formData.append('file', Readable.from(audio), {
-		  filename: 'audio.mp3',
-		  contentType: 'audio/mpeg',
+			filename: 'audio.mp3',
+			contentType: 'audio/mpeg',
 		});
 		formData.append('model', 'whisper-1');
-		
+
 		const headers = {
-		  Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-		  ...formData.getHeaders(),
-		  'Content-Type': 'multipart/form-data' // Agregar Content-Type
+			Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+			...formData.getHeaders(),
+			'Content-Type': 'multipart/form-data' // Agregar Content-Type
 		};
-		
+
 		const response = await axios.post(
-		  'https://api.openai.com/v1/audio/transcriptions',
-		  formData,
-		  {
-			headers: headers
-		  }
+			'https://api.openai.com/v1/audio/transcriptions',
+			formData,
+			{
+				headers: headers
+			}
 		);
-		res.status(200).send({data: response.data.text});
+		res.status(200).send({ data: response.data.text });
 	} catch (error) {
 		console.log(error);
 		res.status(400).send(error);

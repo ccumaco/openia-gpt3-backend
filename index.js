@@ -8,7 +8,7 @@ const bodyParser = require('body-parser')
 const mysql = require("mysql")
 const app = express();
 const morgan = require('morgan')
-const cors = require('cors')
+const cors = require('cors');
 // const { database } = require('./dbSequelize');
 
 var corsOptions = {
@@ -52,7 +52,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/openia', require('./routes/openaiRoutes'));
 app.use('/openia', require('./routes/auth'));
 app.use('/openia', require('./routes/routesMercadoPago'));
-
 
 const server = app.listen(port, () => {
     console.log(`Express is working on port ${port}`);
