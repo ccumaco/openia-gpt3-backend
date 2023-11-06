@@ -37,5 +37,5 @@ const searchUrl = 'http://www.google.com/search?q=paisaje';
   
   module.exports = {
     hashedPassword,
-    searchImage
+    // searchImage
   };
