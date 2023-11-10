@@ -1,9 +1,9 @@
 const puppeteer = require('puppeteer');
-const { makeAResumeOfParagraphs } = require('./openia')
+const { makeAResumeOfProduct } = require('./openia')
 
 const screenshot = async () => {
     const browser = await puppeteer.launch({
-        headless: 'new',
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
@@ -17,7 +17,7 @@ const screenshot = async () => {
 const searchInGoogle = async ({ query }) => {
     const url = 'https://www.google.com/search?q=' + query;
     const browser = await puppeteer.launch({
-        headless: 'new',
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
@@ -40,15 +40,42 @@ const searchInGoogle = async ({ query }) => {
 
     await browser.close();
     console.log(urls.slice(0, 5), 'urls');
-    searchInEachPageParagraphs({ urls: urls.slice(0, 5), maxParagraphs: 3 });
+    // searchInEachPageParagraphs({ urls: urls.slice(0, 5), maxParagraphs: 3 });
     return urls;
 }
 
 
-const searchInEachPageParagraphs = async ({ urls, maxParagraphs = 5 }) => {
-    console.log('entrooo', urls.length);
+const searchINMercadoLibre = async ({ query }) => {
+    try {
+        const browser = await puppeteer.launch({
+            headless: false,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+        const page = await browser.newPage();
+        await page.goto('https://listado.mercadolibre.com.co/' + query);
+        const pageData = await page.evaluate(() => {
+            const urls = [...document.querySelectorAll('.ui-search-result__content-wrapper .ui-search-item__group a.ui-search-item__group__element.ui-search-link')];
+            console.log(urls, 'urls mis urls');
+            let hrefs = [];
+            if (urls) {
+                hrefs = urls.map(a => a.href).slice(0, 5);
+            }
+            return { hrefs };
+        }, query);
+        console.log(pageData, 'pageData');
+        //has que tarde 1s en cargar
+        // await new Promise(resolve => setTimeout(resolve, 1000));
+        await browser.close();
+        await searchInEachProduct({ urls: pageData.hrefs })
+        return pageData;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+const searchInEachProduct = async ({ urls }) => {
     const browser = await puppeteer.launch({
-        headless: 'new',
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
@@ -56,12 +83,13 @@ const searchInEachPageParagraphs = async ({ urls, maxParagraphs = 5 }) => {
     for (const url of urls) {
         try {
             const page = await browser.newPage();
-            await page.goto(url.href);
+            await page.goto(url);
 
-            const pageData = await page.evaluate((maxParagraphs) => {
-                const title = document?.querySelector('h1')?.innerText ?? 'No title';
-                const paragraphs = [...document.querySelectorAll('p')].slice(0, maxParagraphs);
-                const content = paragraphs?.map(p => {
+            const pageData = await page.evaluate(() => {
+                const title = document.querySelector('h1.ui-pdp-title')?.innerText ?? 'No title founded';
+                const price = document.querySelector('.ui-pdp-price__second-line .andes-money-amount span.andes-money-amount__fraction')?.innerText ?? 'No price founded';
+                const features = [...document.querySelectorAll('.ui-vpp-highlighted-specs__features-list li')] ?? [' No features founded '];
+                const content = features?.map(p => {
                     if (p && p.innerText) {
                         return p.innerText;
                     }
@@ -69,9 +97,10 @@ const searchInEachPageParagraphs = async ({ urls, maxParagraphs = 5 }) => {
                 }) ?? [];
                 return {
                     title,
+                    price,
                     content,
                 };
-            }, maxParagraphs);
+            });
 
             data.push(pageData);
         } catch (error) {
@@ -79,15 +108,15 @@ const searchInEachPageParagraphs = async ({ urls, maxParagraphs = 5 }) => {
             // Puedes agregar lógica adicional para manejar el error de la forma que desees.
         }
     }
+    // await new Promise(resolve => setTimeout(resolve, 1000));
     await browser.close();
-    await makeAResumeOfParagraphs({ data })
+    await makeAResumeOfProduct({ data })
     return data;
 }
 
-searchInGoogle({ query: 'televisores de 32 pulgadas' });
+searchINMercadoLibre({ query: 'televisores de 32 pulgadas' });
 
 module.exports = {
     searchInGoogle,
-    searchInEachPageParagraphs,
     screenshot,
 }
