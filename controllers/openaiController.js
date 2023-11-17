@@ -22,7 +22,7 @@ const FormData = require('form-data');
 const axios = require('axios');
 const { Readable } = require('stream');
 const { searchINMercadoLibre, searchInEachProduct } = require("../Services/puppeteer");
-const { joinWithDash } = require("../utils");
+const { joinWithDash } = require("../utils/index.js");
 const { makeAResumeOfProduct } = require("../Services/openia");
 
 
@@ -292,42 +292,7 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage: storage })
 
-const transcriptAudio = async (req, res) => {
-	try {
-		const blobAudio = req.file.buffer;
-		// Convertir blob a buffer
-		const audio = Buffer.from(blobAudio);
 
-		// Guardar archivo en formato mp3
-		fs.writeFileSync('audio.mp3', audio);
-
-		// Crear instancia de FormData
-		const formData = new FormData();
-		formData.append('file', Readable.from(audio), {
-			filename: 'audio.mp3',
-			contentType: 'audio/mpeg',
-		});
-		formData.append('model', 'whisper-1');
-
-		const headers = {
-			Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-			...formData.getHeaders(),
-			'Content-Type': 'multipart/form-data' // Agregar Content-Type
-		};
-
-		const response = await axios.post(
-			'https://api.openai.com/v1/audio/transcriptions',
-			formData,
-			{
-				headers: headers
-			}
-		);
-		res.status(200).send({ data: response.data.text });
-	} catch (error) {
-		console.log(error);
-		res.status(400).send(error);
-	}
-};
 
 
 
@@ -337,6 +302,5 @@ module.exports = {
 	generateTextFree,
 	generateArticle,
 	generateLikeEmail,
-	generateResumes,
-	transcriptAudio
+	generateResumes
 };

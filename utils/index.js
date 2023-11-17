@@ -1,7 +1,5 @@
 const bcrypt = require('bcrypt');
 // const fs = require('fs');
-const http = require('http');
-const cheerio = require('cheerio');
 
 const hashedPassword = async (userPassword) => {
   const saltRounds = 10;

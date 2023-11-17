@@ -1,7 +1,5 @@
 const express = require('express');
-const { verifyToken } = require('../controllers/authController');
-const multer = require('multer');
-const upload = multer();
+const { verifyToken } = require('../controllers/authController.js');
 const {
     generateImage,
     generateText,
