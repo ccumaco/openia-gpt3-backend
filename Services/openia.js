@@ -9,38 +9,56 @@ const openai = new OpenAIApi(configuration);
 
 function createSummary(data) {
     const summaryText = data.map(item => {
-        const title = `Title: ${item.title}`;
-        const price = `Price: ${item.price}`;
-        
-       
-const content = item.content.length > 0 ? `Content: ${item.content.join(', ')}` : 'No content available';
-        return `${title}\n${price}\n${content}\n\n`;
+        const title = `${item.title}`;
+        const price = `${item.price}`;
+        const url = `${item.url}`;
+        const content = item.content.length > 0 ? `Caracteristicas: ${item.content.join(', ')}` : 'No content available';
+        console.log( `Titulo: ${title}\n
+        Precio: ${price}\n
+        Caracteristicas: ${content}\n
+        URL: ${url}\n\n`);
+        return `Titulo: ${title}\n
+                Precio: ${price}\n
+                Caracteristicas: ${content}\n
+                URL: ${url}\n\n`;
     }).
    
 join('\n');
 
     return summaryText;
 }
-const makeAResumeOfProduct = async ({ data = [] }) => {
-    
-    console.log('data', data);
-    const textToStart = 'segun esta informacion que producto es mejor y por que? \n\n'
-
-    const prompt = createSummary(data)
-    console.log(prompt, 'promptpro');
-    const completion = await openai.completions.create({
-        model: 'gpt-3.5-turbo-instruct',
-        prompt: textToStart + prompt + 'estos son ejemplos de como deberias responder \n\n' + exampleProducts[0],
-        stream: false,
-        max_tokens: 100,
-        n: 1,
-    });
-    console.log(completion, 'completioncompletioncompletioncompletion');
-    console.log(completion.choices[0].text, 'completion');
-    return {
-        content: completion.choices[0].text,
-    };
-}
+const makeAResumeOfProduct = async ({ data = [], justOne = false, estimatePrice = 0 }) => {
+    try {
+        let textToStart = '';
+        const justExample = "Estos son solo ejemplos de como responder, recuerda que eres un asesor de ventas y tienes conocimientos en productos";
+        if (justOne) {
+            textToStart = `segun esta informacion que producto es mejor y por que? tengo este presupuesto ${estimatePrice} COP y el uso aun no lo tengo definido,\n\n`
+        }
+        const prompt = createSummary(data);
+        const exampleProductsString = exampleProducts.join('\n');
+        console.log('a empezado a buscar');
+        const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            n: 1,
+            max_tokens: 500,
+            messages: [
+                {
+                    role:"system",
+                    content: `${justExample} (${exampleProductsString}) ${textToStart}`,
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+        });
+        console.log('termino');
+        return completion.choices[0].message.content
+    } catch (error) {
+        console.log(error);
+        return 'algo a fallado';
+    }
+    }
 
 
 module.exports = {

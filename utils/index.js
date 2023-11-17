@@ -9,33 +9,14 @@ const hashedPassword = async (userPassword) => {
   return password;
 }
 
-
-
-// Establecer la URL de búsqueda
-const searchUrl = 'http://www.google.com/search?q=paisaje';
-
-// Realizar la solicitud HTTP y analizar la respuesta
-// const searchImage = () => http.get(searchUrl, (response) => {
-//   let data = '';
-//   response.on('data', (chunk) => {
-//     data += chunk;
-//   });
-//   response.on('end', () => {
-//     const $ = cheerio.load(data);
-//     // Encontrar la primera imagen y extraer la URL de la imagen
-//     const imgSrc = $('img').first().attr('src');
-//     // Descargar la imagen y guardarla en un archivo
-//     const file = fs.createWriteStream('imagen.jpg');
-//     http.get(imgSrc, (response) => {
-//       response.pipe(file);
-//     });
-//   });
-// }).on('error', (error) => {
-//   console.error(error);
-// });
+const joinWithDash = (text) => {
+  if (!text) return '';
+  text = text.trim();
+  return text.split(' ').join('-');
+}
 
   
   module.exports = {
     hashedPassword,
-    //searchImage
+    joinWithDash
   };

@@ -45,7 +45,7 @@ const searchInGoogle = async ({ query }) => {
 }
 
 
-const searchINMercadoLibre = async ({ query }) => {
+const searchINMercadoLibre = async ({ query, justOne }) => {
     try {
         const browser = await puppeteer.launch({
             headless: false,
@@ -55,25 +55,22 @@ const searchINMercadoLibre = async ({ query }) => {
         await page.goto('https://listado.mercadolibre.com.co/' + query);
         const pageData = await page.evaluate(() => {
             const urls = [...document.querySelectorAll('.ui-search-result__content-wrapper .ui-search-item__group a.ui-search-item__group__element.ui-search-link')];
-            console.log(urls, 'urls mis urls');
+            console.log(urls, 'urls');
             let hrefs = [];
             if (urls) {
                 hrefs = urls.map(a => a.href).slice(0, 5);
             }
             return { hrefs };
         }, query);
-        console.log(pageData, 'pageData');
-        //has que tarde 1s en cargar
-        // await new Promise(resolve => setTimeout(resolve, 1000));
         await browser.close();
-        await searchInEachProduct({ urls: pageData.hrefs })
         return pageData;
     } catch (error) {
+        await browser.close();
         console.error(error);
         return [];
     }
 }
-const searchInEachProduct = async ({ urls }) => {
+const searchInEachProduct = async ({ urls, justOne }) => {
     const browser = await puppeteer.launch({
         headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -98,25 +95,24 @@ const searchInEachProduct = async ({ urls }) => {
                 return {
                     title,
                     price,
-                    content,
+                    content
                 };
             });
-
-            data.push(pageData);
+            data.push({...pageData, url});
         } catch (error) {
             console.error(`Error processing URL: ${url.href}`, error.message);
-            // Puedes agregar lógica adicional para manejar el error de la forma que desees.
+            return [];
         }
     }
     // await new Promise(resolve => setTimeout(resolve, 1000));
     await browser.close();
-    await makeAResumeOfProduct({ data })
-    return data;
+    if (!justOne) return data;
+    return data.slice(0, 1);
 }
-
-searchINMercadoLibre({ query: 'televisores de 32 pulgadas' });
 
 module.exports = {
     searchInGoogle,
     screenshot,
+    searchInEachProduct,
+    searchINMercadoLibre
 }

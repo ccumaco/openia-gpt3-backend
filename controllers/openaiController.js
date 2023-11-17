@@ -1,4 +1,5 @@
 require("dotenv").config()
+
 const OpenAIApi = require('openai');
 const {
 	generateHashtag,
@@ -19,8 +20,10 @@ const User = require('../Models/Users');
 const multer = require('multer');
 const FormData = require('form-data');
 const axios = require('axios');
-// const fs = require('fs');
 const { Readable } = require('stream');
+const { searchINMercadoLibre, searchInEachProduct } = require("../Services/puppeteer");
+const { joinWithDash } = require("../utils");
+const { makeAResumeOfProduct } = require("../Services/openia");
 
 
 const configuration = {
@@ -146,16 +149,14 @@ function transformData(dataString) {
 
 const generateTextFree = async (req, res) => {
 	try {
-		const { context } = req.body;
-		// context[context.length - 1].content = validateIfIsQuery(context[context.length - 1].content) + context[context.length - 1].content;
-		const completion = await openai.chat.completions.create({
-			model: "gpt-3.5-turbo",
-			n: 1,
-			messages: context,
-		});
-		const response = completion.choices[0].message.content;
+		const { context, justOne, estimatePrice } = req.body;
+		const textWithoutSpaces = joinWithDash(context[context.length - 1].content);
+		const urls = await searchINMercadoLibre({ query: textWithoutSpaces });
+		const pageData = await searchInEachProduct({ urls: urls.hrefs, justOne });
+		const resumeOfProduct = await makeAResumeOfProduct({ data: pageData, justOne, estimatePrice });
+		
 		res.status(200).send({
-			response
+			response: resumeOfProduct
 		});
 		//this is if you want to use the stream
 		//   completion.then(resp => {
