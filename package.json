@@ -7,7 +7,7 @@
   "description": "Generate images using OpenAI",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "sudo npm install puppeteer --unsafe-perm node index",
     "dev": "nodemon index"
   },
   "keywords": [],
