@@ -22,7 +22,7 @@ const FormData = require('form-data');
 const axios = require('axios');
 const { Readable } = require('stream');
 const { searchINMercadoLibre, searchInEachProduct } = require("../Services/puppeteer");
-const { joinWithDash } = require("../utils/index.js");
+const { joinWithDash } = require("../utils");
 const { makeAResumeOfProduct } = require("../Services/openia");
 
 
