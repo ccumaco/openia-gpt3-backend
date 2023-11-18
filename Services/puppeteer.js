@@ -3,7 +3,7 @@ const { makeAResumeOfProduct } = require('./openia')
 
 const screenshot = async () => {
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
@@ -17,7 +17,7 @@ const screenshot = async () => {
 const searchInGoogle = async ({ query }) => {
     const url = 'https://www.google.com/search?q=' + query;
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
@@ -48,7 +48,7 @@ const searchInGoogle = async ({ query }) => {
 const searchINMercadoLibre = async ({ query, justOne }) => {
     try {
         const browser = await puppeteer.launch({
-            headless: true,
+            headless: false,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
         const page = await browser.newPage();
@@ -72,7 +72,7 @@ const searchINMercadoLibre = async ({ query, justOne }) => {
 }
 const searchInEachProduct = async ({ urls, justOne }) => {
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
