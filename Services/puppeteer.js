@@ -47,7 +47,7 @@ const searchInGoogle = async ({ query }) => {
 
 const searchINMercadoLibre = async ({ query, justOne }) => {
     const browser = await puppeteer.launch({
-          executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        executablePath: '/usr/bin/chromium',
         headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-extensions'],
     });
@@ -73,7 +73,7 @@ const searchINMercadoLibre = async ({ query, justOne }) => {
 }
 const searchInEachProduct = async ({ urls, justOne }) => {
     const browser = await puppeteer.launch({
-          executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        executablePath: '/usr/bin/chromium',
         headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-extensions'],
     });
