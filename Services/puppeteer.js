@@ -63,6 +63,7 @@ const searchINMercadoLibre = async ({ query, justOne }) => {
             return { hrefs };
         }, query);
         await browser.close();
+        
         return pageData;
     } catch (error) {
         await browser.close();
