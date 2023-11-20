@@ -29,11 +29,11 @@ const searchInGoogle = async ({ query }) => {
         const linksArray = [];
         links.forEach((link) => {
             console.log(link, 'link');
-            if (!link) return; 
+            if (!link) return;
             linksArray.push({
                 title: link.innerText,
                 href: link.href,
-            }); 
+            });
         });
         return linksArray;
     });
@@ -47,7 +47,6 @@ const searchInGoogle = async ({ query }) => {
 
 const searchINMercadoLibre = async ({ query, justOne }) => {
     const browser = await puppeteer.launch({
-        executablePath: '/usr/bin/chromium-browser',
         headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-extensions'],
     });
@@ -73,7 +72,6 @@ const searchINMercadoLibre = async ({ query, justOne }) => {
 }
 const searchInEachProduct = async ({ urls, justOne }) => {
     const browser = await puppeteer.launch({
-        executablePath: '/usr/bin/chromium-browser',
         headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-extensions'],
     });
@@ -83,7 +81,7 @@ const searchInEachProduct = async ({ urls, justOne }) => {
             try {
                 const page = await browser.newPage();
                 await page.goto(url);
-    
+
                 const pageData = await page.evaluate(() => {
                     const title = document.querySelector('h1.ui-pdp-title')?.innerText ?? 'No title founded';
                     const price = document.querySelector('.ui-pdp-price__second-line .andes-money-amount span.andes-money-amount__fraction')?.innerText ?? 'No price founded';
@@ -100,7 +98,7 @@ const searchInEachProduct = async ({ urls, justOne }) => {
                         content
                     };
                 });
-                data.push({...pageData, url});
+                data.push({ ...pageData, url });
             } catch (error) {
                 console.error(`Error processing URL: ${url.href}`, error.message);
                 return [];
